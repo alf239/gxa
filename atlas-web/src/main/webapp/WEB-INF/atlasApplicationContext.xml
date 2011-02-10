@@ -361,7 +361,7 @@
     </bean>
 
     <bean name="experimentsRequestHandler" class="uk.ac.ebi.gxa.requesthandlers.query.ExperimentsPopupRequestHandler">
-        <property name="dao" ref="atlasSolrDAO"/>
+        <property name="atlasDAO" ref="atlasDAO"/>
         <property name="efo" ref="efo"/>
         <property name="atlasProperties" ref="atlasProperties"/>
         <property name="atlasStatisticsQueryService" ref="atlasStatisticsQueryService"/>

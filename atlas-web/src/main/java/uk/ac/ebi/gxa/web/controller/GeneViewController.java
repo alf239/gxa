@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.statistics.Attribute;
 import uk.ac.ebi.gxa.statistics.Experiment;
-import uk.ac.ebi.gxa.statistics.StatisticsQueryUtils;
 import uk.ac.ebi.gxa.statistics.StatisticsType;
 
 import java.io.ByteArrayOutputStream;
@@ -164,8 +163,8 @@ public class GeneViewController extends AtlasViewController {
 
         AtlasGene gene = result.getGene();
         List<AtlasExperiment> exps = efo != null ?
-                getRankedGeneExperiments(gene, null, efo, StatisticsQueryUtils.EFO, fromRow, toRow) :
-                getRankedGeneExperiments(gene, ef, efv, !StatisticsQueryUtils.EFO, fromRow, toRow);
+                getRankedGeneExperiments(gene, null, efo, true, fromRow, toRow) :
+                getRankedGeneExperiments(gene, ef, efv, false, fromRow, toRow);
 
         model.addAttribute("exps", exps)
                 .addAttribute("atlasGene", gene);
@@ -203,6 +202,9 @@ public class GeneViewController extends AtlasViewController {
             if (atlasExperiment != null) {
                 Attribute attr = exp.getHighestRankAttribute();
                 if (attr != null && attr.getEf() != null) {
+                    // TODO: really bad idea - we're in UI layer, and changing the objects we've just received from the underlying layer
+                    // means other clients will not get the same results - that is, we both spread the logic across the application and
+                    // make sure different pages show different information
                     atlasExperiment.setHighestRankEF(attr.getEf());
                 } else {
                     log.error("Failed to find highest rank attribute in: " + exp);

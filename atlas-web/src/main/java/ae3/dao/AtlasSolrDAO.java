@@ -78,16 +78,6 @@ public class AtlasSolrDAO {
     }
 
     /**
-     * Retrieve experiment by ID
-     *
-     * @param experiment_id_key experiment ID
-     * @return experiment if found, null if not
-     */
-    public AtlasExperiment getExperimentById(long experiment_id_key) {
-        return getExperimentById(String.valueOf(experiment_id_key));
-    }
-
-    /**
      * Returns an AtlasExperiment that contains all information from index.
      *
      * @param accessionId - an experiment accession/identifier.
@@ -374,7 +364,6 @@ public class AtlasSolrDAO {
     }
 
     /**
-     *
      * @param name
      * @return Iterable of AtlasGenes matching (gene) name in Solr gene index
      */

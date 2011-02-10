@@ -22,20 +22,17 @@
 
 package uk.ac.ebi.gxa.requesthandlers.query;
 
-import ae3.dao.AtlasSolrDAO;
-import ae3.model.AtlasExperiment;
-import ae3.model.AtlasGene;
 import ae3.service.AtlasStatisticsQueryService;
 import ae3.service.structuredquery.Constants;
+import uk.ac.ebi.gxa.dao.AtlasDAO;
 import uk.ac.ebi.gxa.efo.Efo;
 import uk.ac.ebi.gxa.efo.EfoTerm;
 import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.requesthandlers.base.AbstractRestRequestHandler;
-import uk.ac.ebi.gxa.statistics.Attribute;
 import uk.ac.ebi.gxa.statistics.Experiment;
-import uk.ac.ebi.gxa.statistics.StatisticsQueryUtils;
 import uk.ac.ebi.gxa.utils.EscapeUtil;
 import uk.ac.ebi.microarray.atlas.model.ExpressionAnalysis;
+import uk.ac.ebi.microarray.atlas.model.Gene;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -46,14 +43,13 @@ import static uk.ac.ebi.gxa.statistics.StatisticsType.*;
  * @author pashky
  */
 public class ExperimentsPopupRequestHandler extends AbstractRestRequestHandler {
-
-    private AtlasSolrDAO atlasSolrDAO;
+    private AtlasDAO atlasDAO;
     private Efo efo;
     private AtlasProperties atlasProperties;
     private AtlasStatisticsQueryService atlasStatisticsQueryService;
 
-    public void setDao(AtlasSolrDAO atlasSolrDAO) {
-        this.atlasSolrDAO = atlasSolrDAO;
+    public void setAtlasDAO(AtlasDAO atlasDAO) {
+        this.atlasDAO = atlasDAO;
     }
 
     public void setEfo(Efo efo) {
@@ -90,22 +86,20 @@ public class ExperimentsPopupRequestHandler extends AbstractRestRequestHandler {
                 }
             }
 
-            AtlasSolrDAO.AtlasGeneResult result = atlasSolrDAO.getGeneById(geneId);
-            if (!result.isFound()) {
+            Gene gene = atlasDAO.getGeneById(geneId);
+            if (gene == null) {
                 throw new IllegalArgumentException("Atlas gene " + geneId + " not found");
             }
 
-            AtlasGene gene = result.getGene();
-
             Map<String, Object> jsGene = new HashMap<String, Object>();
 
-            jsGene.put("id", gene.getGeneId());
-            jsGene.put("identifier", gene.getGeneIdentifier());
-            jsGene.put("name", gene.getGeneName());
+            jsGene.put("id", gene.getGeneID());
+            jsGene.put("identifier", gene.getIdentifier());
+            jsGene.put("name", gene.getName());
             jsResult.put("gene", jsGene);
 
             List<Experiment> experiments = atlasStatisticsQueryService.getExperimentsSortedByPvalueTRank(
-                    gene.getGeneId(), UP_DOWN, factor, factorValue, isEfo == StatisticsQueryUtils.EFO, -1, -1);
+                    gene.getGeneID(), UP_DOWN, factor, factorValue, isEfo, -1, -1);
 
             Map<Long, Map<String, List<Experiment>>> exmap = new HashMap<Long, Map<String, List<Experiment>>>();
             for (Experiment experiment : experiments) {
@@ -154,11 +148,11 @@ public class ExperimentsPopupRequestHandler extends AbstractRestRequestHandler {
 
             List<Map> jsExps = new ArrayList<Map>();
             for (Map.Entry<Long, Map<String, List<Experiment>>> e : exps) {
-                AtlasExperiment aexp = atlasSolrDAO.getExperimentById(e.getKey());
-                if (aexp != null) {
+                uk.ac.ebi.microarray.atlas.model.Experiment experiment = atlasDAO.getShallowExperimentById(e.getKey());
+                if (experiment != null) {
                     Map<String, Object> jsExp = new HashMap<String, Object>();
-                    jsExp.put("accession", aexp.getAccession());
-                    jsExp.put("name", aexp.getDescription());
+                    jsExp.put("accession", experiment.getAccession());
+                    jsExp.put("name", experiment.getDescription());
                     jsExp.put("id", e.getKey());
 
                     List<Map> jsEfs = new ArrayList<Map>();
