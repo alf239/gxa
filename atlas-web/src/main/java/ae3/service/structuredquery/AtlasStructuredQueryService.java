@@ -23,7 +23,10 @@
 package ae3.service.structuredquery;
 
 import ae3.dao.AtlasSolrDAO;
-import ae3.model.*;
+import ae3.model.AtlasGene;
+import ae3.model.Expression;
+import ae3.model.ListResultRow;
+import ae3.model.ListResultRowExperiment;
 import ae3.service.AtlasStatisticsQueryService;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -41,6 +44,7 @@ import org.apache.solr.core.SolrCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import uk.ac.ebi.gxa.dao.AtlasDAO;
 import uk.ac.ebi.gxa.efo.Efo;
 import uk.ac.ebi.gxa.efo.EfoTerm;
 import uk.ac.ebi.gxa.index.builder.IndexBuilder;
@@ -86,6 +90,7 @@ public class AtlasStructuredQueryService implements IndexBuilderEventHandler, Di
     private AtlasGenePropertyService genePropService;
     private AtlasStatisticsQueryService atlasStatisticsQueryService;
 
+    private AtlasDAO atlasDAO;
     private AtlasSolrDAO atlasSolrDAO;
     private AtlasNetCDFDAO atlasNetCDFDAO;
 
@@ -152,12 +157,12 @@ public class AtlasStructuredQueryService implements IndexBuilderEventHandler, Di
         this.efvService = efvService;
     }
 
-    public AtlasEfoService getEfoService() {
-        return efoService;
-    }
-
     public void setEfoService(AtlasEfoService efoService) {
         this.efoService = efoService;
+    }
+
+    public void setAtlasDAO(AtlasDAO atlasDAO) {
+        this.atlasDAO = atlasDAO;
     }
 
     public void setAtlasSolrDAO(AtlasSolrDAO atlasSolrDAO) {
@@ -1625,7 +1630,7 @@ public class AtlasStructuredQueryService implements IndexBuilderEventHandler, Di
                     result.getNumberOfListResultsForGene(gene) > result.getRowsPerGene())
                 continue;
             // Get AtlasExperiment to get experiment description, needed in list view
-            AtlasExperiment aexp = atlasSolrDAO.getExperimentById(exp.getExperimentId());
+            uk.ac.ebi.microarray.atlas.model.Experiment aexp = atlasDAO.getShallowExperimentById(Long.valueOf(exp.getExperimentId()));
             if (aexp == null)
                 continue;
 
@@ -1790,7 +1795,7 @@ public class AtlasStructuredQueryService implements IndexBuilderEventHandler, Di
                 } else if (ff.getName().startsWith("exp_")) {
                     for (FacetField.Count ffc : ff.getValues())
                         if (!qstate.getExperiments().contains(ffc.getName())) {
-                            AtlasExperiment exp = atlasSolrDAO.getExperimentById(ffc.getName());
+                            uk.ac.ebi.microarray.atlas.model.Experiment exp = atlasDAO.getShallowExperimentById(Long.valueOf(ffc.getName()));
                             if (exp != null) {
                                 String expName = exp.getAccession();
                                 if (expName != null) {

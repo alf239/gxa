@@ -40,6 +40,7 @@ import uk.ac.ebi.gxa.utils.EscapeUtil;
 import uk.ac.ebi.gxa.utils.StringUtil;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.google.common.collect.Collections2.filter;
@@ -74,16 +75,6 @@ public class AtlasSolrDAO {
      */
     public AtlasExperiment getExperimentById(String experiment_id_key) {
         return getExperimentByQuery("id:" + EscapeUtil.escapeSolr(experiment_id_key));
-    }
-
-    /**
-     * Retrieve experiment by ID
-     *
-     * @param experiment_id_key experiment ID
-     * @return experiment if found, null if not
-     */
-    public AtlasExperiment getExperimentById(long experiment_id_key) {
-        return getExperimentById(String.valueOf(experiment_id_key));
     }
 
     /**
