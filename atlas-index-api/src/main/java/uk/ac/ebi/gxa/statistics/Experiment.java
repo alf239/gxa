@@ -7,9 +7,10 @@ import java.io.Serializable;
  */
 public class Experiment implements Serializable {
 
-    private static final long serialVersionUID = -73081477949984913L;
+    private static final long serialVersionUID = 5513628423830801336L;
+
     private String accession;
-    private String experimentId;
+    private long experimentId;
 
     // Used to store minimum pVal when retrieving ranked lists of experiments sorted (ASC) by pValue/tStat ranks wrt to a specific ef(-efv) combination
     PvalTstatRank pValTstatRank;
@@ -18,9 +19,9 @@ public class Experiment implements Serializable {
     private transient Attribute highestRankAttribute;
 
 
-    public Experiment(final String accession, final String experimentId) {
+    public Experiment(final String accession, final Long experimentId) {
         this.accession = accession.intern();
-        this.experimentId = experimentId.intern();
+        this.experimentId = experimentId;
     }
 
     public String getAccession() {
@@ -31,7 +32,7 @@ public class Experiment implements Serializable {
         this.accession = accession.intern();
     }
 
-    public String getExperimentId() {
+    public long getExperimentId() {
         return experimentId;
     }
 
@@ -64,7 +65,7 @@ public class Experiment implements Serializable {
 
         Experiment that = (Experiment) o;
 
-        if (accession == null || !accession.equals(that.accession) || experimentId == null || !experimentId.equals(that.experimentId)) {
+        if (accession == null || !accession.equals(that.accession) || experimentId != that.experimentId) {
             return false;
         }
         return true;
@@ -73,7 +74,7 @@ public class Experiment implements Serializable {
     @Override
     public int hashCode() {
         int result = accession != null ? accession.hashCode() : 0;
-        result = 31 * result + (experimentId != null ? experimentId.hashCode() : 0);
+        result = 31 * result + Long.valueOf(experimentId).hashCode();
         return result;
     }
 }
