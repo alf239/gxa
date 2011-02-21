@@ -40,7 +40,6 @@ import uk.ac.ebi.gxa.utils.EscapeUtil;
 import uk.ac.ebi.gxa.utils.StringUtil;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.google.common.collect.Collections2.filter;
@@ -73,8 +72,8 @@ public class AtlasSolrDAO {
      * @param experiment_id_key experiment ID
      * @return experiment if found, null if not
      */
-    public AtlasExperiment getExperimentById(String experiment_id_key) {
-        return getExperimentByQuery("id:" + EscapeUtil.escapeSolr(experiment_id_key));
+    public AtlasExperiment getExperimentById(long experiment_id_key) {
+        return getExperimentByQuery("id:" + experiment_id_key);
     }
 
     /**
@@ -364,7 +363,7 @@ public class AtlasSolrDAO {
     }
 
     /**
-     * @param name  name of genes to search for
+     * @param name name of genes to search for
      * @return Iterable of AtlasGenes matching (gene) name in Solr gene index
      */
     public Iterable<AtlasGene> getGenesByName(String name) {

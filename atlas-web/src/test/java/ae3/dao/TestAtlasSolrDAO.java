@@ -24,14 +24,15 @@ package ae3.dao;
 
 import ae3.model.AtlasExperiment;
 import ae3.model.AtlasGene;
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.*;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import uk.ac.ebi.gxa.index.AbstractOnceIndexTest;
 
 import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class TestAtlasSolrDAO extends AbstractOnceIndexTest
 {
@@ -84,7 +85,7 @@ public class TestAtlasSolrDAO extends AbstractOnceIndexTest
 	@Test
 	public void test_getExperimentByIdDw()
 	{
-		  AtlasExperiment exp = atlasSolrDAO.getExperimentById("1036804999");
+		  AtlasExperiment exp = atlasSolrDAO.getExperimentById(1036804999);
 		  assertNotNull(exp);
 		  assertNotNull(exp.getAccession());
 	}
