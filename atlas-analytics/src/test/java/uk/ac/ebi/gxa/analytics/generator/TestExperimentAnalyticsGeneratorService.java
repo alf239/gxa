@@ -32,12 +32,12 @@ import uk.ac.ebi.gxa.analytics.generator.service.ExperimentAnalyticsGeneratorSer
 import uk.ac.ebi.gxa.dao.AtlasDAOTestCase;
 import uk.ac.ebi.gxa.data.AtlasDataDAO;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
 import static org.easymock.EasyMock.*;
+import static uk.ac.ebi.gxa.utils.ResourceUtil.getClasspathRoot;
 
 public class TestExperimentAnalyticsGeneratorService extends AtlasDAOTestCase {
     private final static String E_GEOD_5035 = "E-GEOD-5035";
@@ -53,7 +53,7 @@ public class TestExperimentAnalyticsGeneratorService extends AtlasDAOTestCase {
     @Test
     public void testCreateAnalyticsForExperimentWithoutFactors() throws AnalyticsGeneratorException {
         final AtlasDataDAO atlasDataDAO = new AtlasDataDAO();
-        atlasDataDAO.setAtlasDataRepo(new File(getClass().getClassLoader().getResource("").getPath()));
+        atlasDataDAO.setAtlasDataRepo(getClasspathRoot(getClass()));
 
         final AtlasComputeService atlasComputeService = createMock(AtlasComputeService.class);
         expect(atlasComputeService

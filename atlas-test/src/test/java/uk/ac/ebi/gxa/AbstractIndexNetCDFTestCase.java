@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.xml.sax.SAXException;
 import uk.ac.ebi.gxa.dao.AtlasDAOTestCase;
+import uk.ac.ebi.gxa.data.AtlasDataDAO;
+import uk.ac.ebi.gxa.data.NetCDFCreatorException;
 import uk.ac.ebi.gxa.index.SolrContainerFactory;
 import uk.ac.ebi.gxa.index.builder.DefaultIndexBuilder;
 import uk.ac.ebi.gxa.index.builder.IndexAllCommand;
@@ -38,8 +40,6 @@ import uk.ac.ebi.gxa.index.builder.listener.IndexBuilderEvent;
 import uk.ac.ebi.gxa.index.builder.listener.IndexBuilderListener;
 import uk.ac.ebi.gxa.index.builder.service.ExperimentAtlasIndexBuilderService;
 import uk.ac.ebi.gxa.index.builder.service.GeneAtlasIndexBuilderService;
-import uk.ac.ebi.gxa.data.NetCDFCreatorException;
-import uk.ac.ebi.gxa.data.AtlasDataDAO;
 import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.properties.ResourceFileStorage;
 import uk.ac.ebi.gxa.utils.FileUtil;
@@ -52,6 +52,8 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.LogManager;
+
+import static uk.ac.ebi.gxa.utils.ResourceUtil.getClasspathRoot;
 
 /**
  * Test case that creates Solr indices and NetCDFs from DB unit test.
@@ -85,7 +87,7 @@ public abstract class AbstractIndexNetCDFTestCase extends AtlasDAOTestCase {
     }
 
     private void generateNetCDFs() throws NetCDFCreatorException, InterruptedException {
-        final File classPath = new File(this.getClass().getClassLoader().getResource("").getPath());
+        final File classPath = getClasspathRoot(getClass());
         netCDFRepoLocation = new File(classPath, "netcdfs");
         atlasDataDAO = new AtlasDataDAO();
         atlasDataDAO.setAtlasDataRepo(netCDFRepoLocation);

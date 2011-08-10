@@ -2,17 +2,18 @@ package uk.ac.ebi.gxa.data;
 
 import com.google.common.base.Predicates;
 import junit.framework.TestCase;
-import uk.ac.ebi.microarray.atlas.model.Experiment;
 import uk.ac.ebi.microarray.atlas.model.ArrayDesign;
+import uk.ac.ebi.microarray.atlas.model.Experiment;
 import uk.ac.ebi.microarray.atlas.model.ExpressionAnalysis;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static uk.ac.ebi.gxa.utils.ResourceUtil.getClasspathRoot;
 
 /**
  * This class tests functionality of AtlasDataDAO
@@ -45,7 +46,7 @@ public class TestAtlasDataDAO extends TestCase {
 
 
         atlasDataDAO = new AtlasDataDAO();
-        atlasDataDAO.setAtlasDataRepo(new File(getClass().getClassLoader().getResource("").getPath()));
+        atlasDataDAO.setAtlasDataRepo(getClasspathRoot(getClass()));
 
         geneIds = new HashSet<Long>();
         geneIds.add(geneId);

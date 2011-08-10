@@ -30,8 +30,8 @@ import uk.ac.ebi.gxa.data.AtlasDataException;
 import uk.ac.ebi.gxa.web.filter.ResourceWatchdogFilter;
 import uk.ac.ebi.microarray.atlas.model.ArrayDesign;
 import uk.ac.ebi.microarray.atlas.model.Assay;
-import uk.ac.ebi.microarray.atlas.model.Sample;
 import uk.ac.ebi.microarray.atlas.model.Experiment;
+import uk.ac.ebi.microarray.atlas.model.Sample;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +41,7 @@ import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static uk.ac.ebi.gxa.utils.ResourceUtil.getClasspathRoot;
 
 /**
  * @author pashky
@@ -88,19 +89,19 @@ public class ExperimentalDataTest {
 
     private List<Sample> eMexp1913Samples() {
         final List<Sample> result = new ArrayList<Sample>();
-        final String[] accessions = new String[] {
-            "C99V50F 5-43",
-            "C99WT 5-23",
-            "mock 2-67_3. Negative control",
-            "C99I45F 4-25a",
-            "C99V50F 4-52",
-            "C99WT 4-2",
-            "C99I45F 4-13",
-            "mock 2-67_2. Negative control",
-            "C99V50F 5-59a",
-            "mock 2-67_1. Negative control",
-            "C99WT 5-12",
-            "C99I45F 4-17"
+        final String[] accessions = new String[]{
+                "C99V50F 5-43",
+                "C99WT 5-23",
+                "mock 2-67_3. Negative control",
+                "C99I45F 4-25a",
+                "C99V50F 4-52",
+                "C99WT 4-2",
+                "C99I45F 4-13",
+                "mock 2-67_2. Negative control",
+                "C99V50F 5-59a",
+                "mock 2-67_1. Negative control",
+                "C99WT 5-12",
+                "C99I45F 4-17"
         };
 
         for (String s : accessions) {
@@ -149,7 +150,7 @@ public class ExperimentalDataTest {
 
     private static File getTestNCDir() throws URISyntaxException {
         // won't work for JARs, networks and stuff, but so far so good...
-        return new File(ExperimentalData.class.getClassLoader().getResource("").getPath());
+        return getClasspathRoot(ExperimentalData.class);
     }
 
     @After
