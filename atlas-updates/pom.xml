@@ -24,7 +24,11 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>1.8.2</version>
+            <!--
+            we're forced to use 1.6.9 by GMaven plugin.
+            upgrade Groovy as soon as this problem is resolved.
+            -->
+            <version>1.6.9</version>
         </dependency>
     </dependencies>
 </project>
