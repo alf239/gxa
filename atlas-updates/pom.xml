@@ -21,5 +21,10 @@
             <artifactId>db-migration</artifactId>
             <version>0.9.9-m5</version>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>1.8.2</version>
+        </dependency>
     </dependencies>
 </project>
