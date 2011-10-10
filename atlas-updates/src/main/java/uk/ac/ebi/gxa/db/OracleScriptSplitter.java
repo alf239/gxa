@@ -71,6 +71,9 @@ class OracleScriptSplitter {
                     plsqlMode = true;
                     sqlBuffer.append(line);
                     sqlBuffer.append("\n");
+                } else if (!plsqlMode && ("exit;".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line))) {
+                    log.info("EXIT; encountered - returning");
+                    return;
                 } else if (!plsqlMode && line.endsWith(";")) {
                     sqlBuffer.append(line.substring(0, line.lastIndexOf(";")));
                     execute(executor, sqlBuffer);
