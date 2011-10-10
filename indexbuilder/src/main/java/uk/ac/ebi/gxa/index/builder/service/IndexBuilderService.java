@@ -26,6 +26,8 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ebi.gxa.dao.AtlasDAO;
 import uk.ac.ebi.gxa.index.builder.*;
 
@@ -79,7 +81,8 @@ public abstract class IndexBuilderService {
      * @param progressUpdater listener for passing progress updates
      * @throws IndexBuilderException if the is a problem whilst generating the index
      */
-    final public void build(final IndexBuilderCommand command, final ProgressUpdater progressUpdater) throws IndexBuilderException {
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void build(final IndexBuilderCommand command, final ProgressUpdater progressUpdater) throws IndexBuilderException {
         command.visit(new IndexBuilderCommandVisitor() {
             public void process(IndexAllCommand cmd) throws IndexBuilderException {
                 processCommand(cmd, progressUpdater);
