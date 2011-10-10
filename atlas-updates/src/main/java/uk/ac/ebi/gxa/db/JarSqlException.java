@@ -25,17 +25,19 @@ package uk.ac.ebi.gxa.db;
 import com.carbonfive.db.jdbc.DatabaseType;
 import com.carbonfive.db.migration.AbstractMigration;
 import com.carbonfive.db.migration.MigrationException;
-import com.google.common.io.Closeables;
 import org.apache.commons.lang.Validate;
 import org.springframework.core.io.Resource;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static com.google.common.io.Closeables.closeQuietly;
 
 /**
  * @author alf
@@ -51,8 +53,10 @@ public class JarSqlException extends AbstractMigration {
     @Override
     public void migrate(DatabaseType dbType, Connection connection) {
         ZipInputStream zis = null;
+        InputStream is = null;
         try {
-            zis = new ZipInputStream(resource.getInputStream());
+            is = resource.getInputStream();
+            zis = new ZipInputStream(is);
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.getName().endsWith(".sql")) {
@@ -71,7 +75,8 @@ public class JarSqlException extends AbstractMigration {
         } catch (SQLException e) {
             throw new MigrationException("SQL Error while executing the script.", e);
         } finally {
-            Closeables.closeQuietly(zis);
+            closeQuietly(zis);
+            closeQuietly(is);
         }
     }
 }
