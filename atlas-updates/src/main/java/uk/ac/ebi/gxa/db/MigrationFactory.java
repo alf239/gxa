@@ -16,6 +16,9 @@ public class MigrationFactory extends com.carbonfive.db.migration.MigrationFacto
         if ("sql".equals(extension)) {
             return new OracleScriptMigration(version, resource);
         }
+        if ("jar".equals(extension)) {
+            return new JarSqlException(version, resource);
+        }
 
         return super.create(version, resource);
     }
