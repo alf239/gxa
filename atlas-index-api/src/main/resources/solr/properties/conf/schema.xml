@@ -249,9 +249,7 @@ but may be good for SKUs.  Can insert dashes in the wrong place and still match.
 
 
     <fields>
-
-        <field name="property_id" type="integer" indexed="true" stored="true"/>
-        <field name="value_id" type="integer" indexed="true" stored="true"/>
+        <field name="id" type="string" indexed="true" stored="true"/>
 
         <field name="property" type="text" indexed="true" stored="true"/>
         <field name="property_f" type="string" indexed="true" stored="false"/>
@@ -266,7 +264,7 @@ but may be good for SKUs.  Can insert dashes in the wrong place and still match.
 
 
     <!-- field to use to determine and enforce document uniqueness. -->
-    <uniqueKey>value_id</uniqueKey>
+    <uniqueKey>id</uniqueKey>
 
     <!-- field for the QueryParser to use when an explicit fieldname is absent -->
     <defaultSearchField>value</defaultSearchField>

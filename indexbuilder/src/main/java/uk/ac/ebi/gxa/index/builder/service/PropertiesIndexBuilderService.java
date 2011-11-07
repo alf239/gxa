@@ -69,12 +69,13 @@ public class PropertiesIndexBuilderService extends IndexBuilderService {
         }
     }
 
-    private void addProperty(Property value) throws SolrServerException, IOException {
+    private void addProperty(Property property) throws SolrServerException, IOException {
         SolrInputDocument solrInputDoc = new SolrInputDocument();
-        solrInputDoc.addField("property", value.getName());
-        solrInputDoc.addField("value", value.getValue());
-        solrInputDoc.addField("pvalue_" + value.getName(), value.getValue());
-        getLog().debug("Adding property " + value);
+        solrInputDoc.addField("id", property.uniqueKey());
+        solrInputDoc.addField("property", property.getName());
+        solrInputDoc.addField("value", property.getValue());
+        solrInputDoc.addField("pvalue_" + property.getName(), property.getValue());
+        getLog().debug("Adding property " + property);
         getSolrServer().add(solrInputDoc);
     }
 

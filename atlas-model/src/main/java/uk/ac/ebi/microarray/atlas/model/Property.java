@@ -69,6 +69,11 @@ public class Property {
         return value;
     }
 
+    @Nonnull
+    public String uniqueKey() {
+        return name.getId() + ":" + value.getId();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
