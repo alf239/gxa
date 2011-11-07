@@ -3,7 +3,10 @@ package uk.ac.ebi.gxa.dao;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.microarray.atlas.model.*;
+import uk.ac.ebi.microarray.atlas.model.Assay;
+import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
+import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 
 import java.util.List;
 
@@ -61,9 +64,10 @@ public class AssayDAO extends AbstractDAO<Assay> {
                 "from AssayProperty ap");
     }
 
-    @SuppressWarnings("unchecked")
-    public List<AssayProperty> findProperties(PropertyName property, PropertyValue propertyValue) {
-        return template.find("select ap from AssayProperty ap " +
+    public void deleteProperties(PropertyName property, PropertyValue propertyValue) {
+        template.bulkUpdate("delete from AssayProperty ap " +
                 "where ap.property = ? and ap.propertyValue = ?", property, propertyValue);
+        template.flush();
+        template.clear();
     }
 }

@@ -4,6 +4,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
 
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractDAO<T> {
@@ -81,9 +82,8 @@ public abstract class AbstractDAO<T> {
         template.flush();
     }
 
-    public void deleteAllOf(Iterable<?> objects) {
-        for (Object obj : objects)
-            template.delete(obj);
+    public void deleteAllOf(Collection<?> objects) {
+        template.deleteAll(objects);
         template.flush();
         template.clear();
     }

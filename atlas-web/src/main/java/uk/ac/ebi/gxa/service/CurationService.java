@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ebi.gxa.dao.*;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
@@ -102,15 +101,15 @@ public class CurationService {
      * @param propertyValue
      * @throws ResourceNotFoundException
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void removePropertyValue(final String propertyName,
                                     final String propertyValue) throws ResourceNotFoundException {
         try {
             PropertyName property = propertyDAO.getByName(propertyName);
             PropertyValue propValue = propertyValueDAO.find(propertyValue);
 
-            assayDAO.deleteAllOf(assayDAO.findProperties(property, propValue));
-            sampleDAO.deleteAllOf(sampleDAO.findProperties(property, propValue));
+            assayDAO.deleteProperties(property, propValue);
+            sampleDAO.deleteProperties(property, propValue);
         } catch (RecordNotFoundException e) {
             throw convert(e);
         }
@@ -241,6 +240,7 @@ public class CurationService {
      * @return Collection of ApiAssayProperty for assay: assayAccession in experiment: experimentAccession
      * @throws ResourceNotFoundException if experiment: experimentAccession or assay: assayAccession in that experiment are not found
      */
+    @Transactional
     public Collection<ApiProperty> getAssayProperties(
             final String experimentAccession,
             final String assayAccession)
@@ -305,6 +305,7 @@ public class CurationService {
      * @throws ResourceNotFoundException if experiment: experimentAccession or sample: sampleAccession
      *                                   in that experiment are not found
      */
+    @Transactional
     public Collection<ApiProperty> getSampleProperties(
             final String experimentAccession,
             final String sampleAccession)

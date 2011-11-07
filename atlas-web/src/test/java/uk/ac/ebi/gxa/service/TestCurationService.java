@@ -194,35 +194,26 @@ public class TestCurationService extends AtlasDAOTestCase {
 
 
     @Test
-    public void testRemovePropertyValue() throws Exception {
-        prepareRemoval();
-
-        validateRemoval();
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void validateRemoval() throws ResourceNotFoundException {
-        assertFalse("Property : " + CELL_TYPE + ":" + VALUE007 + " not removed from assay properties",
-                assayPropertyPresent(E_MEXP_420, ASSAY_ACC, CELL_TYPE, VALUE007));
-        assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not removed from sample properties",
-                samplePropertyPresent(E_MEXP_420, SAMPLE_ACC, PROP3, VALUE004));
+    public void testRemovePropertyValue() throws Exception {
+        assertTrue("Property : " + CELL_TYPE + ":" + VALUE007 + " not found in assay properties",
+                propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), CELL_TYPE, VALUE007));
+        assertTrue("Property : " + PROP3 + ":" + VALUE004 + " not found in sample properties",
+                propertyPresent(curationService.getSampleProperties(E_MEXP_420, SAMPLE_ACC), PROP3, VALUE004));
+
+        curationService.removePropertyValue(CELL_TYPE, VALUE007);
+        curationService.removePropertyValue(PROP3, VALUE004);
 
         Collection<String> propertyValues = curationService.getPropertyValues(CELL_TYPE);
         assertFalse("Property value: " + VALUE007 + " found", propertyValues.contains(VALUE007));
 
         propertyValues = curationService.getPropertyValues(PROP3);
         assertFalse("Property value: " + VALUE004 + " found", propertyValues.contains(VALUE004));
-    }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void prepareRemoval() throws ResourceNotFoundException {
-        assertTrue("Property : " + CELL_TYPE + ":" + VALUE007 + " not found in assay properties",
-                assayPropertyPresent(E_MEXP_420, ASSAY_ACC, CELL_TYPE, VALUE007));
-        assertTrue("Property : " + PROP3 + ":" + VALUE004 + " not found in sample properties",
-                samplePropertyPresent(E_MEXP_420, SAMPLE_ACC, PROP3, VALUE004));
-
-        curationService.removePropertyValue(CELL_TYPE, VALUE007);
-        curationService.removePropertyValue(PROP3, VALUE004);
+        assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not removed from sample properties",
+                propertyPresent(curationService.getSampleProperties(E_MEXP_420, SAMPLE_ACC), PROP3, VALUE004));
+        assertFalse("Property : " + CELL_TYPE + ":" + VALUE007 + " not removed from assay properties",
+                propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), CELL_TYPE, VALUE007));
     }
 
     @Test
@@ -261,20 +252,12 @@ public class TestCurationService extends AtlasDAOTestCase {
         ApiProperty[] newProps = {apiProperty};
 
         curationService.deleteAssayProperties(E_MEXP_420, ASSAY_ACC, newProps);
-        assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not deleted in assay properties", assayPropertyPresent(E_MEXP_420, ASSAY_ACC, PROP3, VALUE004));
+        assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not deleted in assay properties",
+                propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), PROP3, VALUE004));
 
         curationService.putAssayProperties(E_MEXP_420, ASSAY_ACC, newProps);
-        assertTrue("Property : " + PROP3 + ":" + VALUE004 + " not added to assay properties", assayPropertyPresent(E_MEXP_420, ASSAY_ACC, PROP3, VALUE004));
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean assayPropertyPresent(String experiment, String assay, String property, String value) throws ResourceNotFoundException {
-        return propertyPresent(curationService.getAssayProperties(experiment, assay), property, value);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean samplePropertyPresent(String experiment, String sample, String property, String value) throws ResourceNotFoundException {
-        return propertyPresent(curationService.getSampleProperties(experiment, sample), property, value);
+        assertTrue("Property : " + PROP3 + ":" + VALUE004 + " not added to assay properties",
+                propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), PROP3, VALUE004));
     }
 
     @Test
@@ -385,7 +368,6 @@ public class TestCurationService extends AtlasDAOTestCase {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean propertyPresent(Collection<ApiProperty> properties, String propertyName, String propertyValue) {
         boolean found = false;
         for (ApiProperty property : properties) {

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import uk.ac.ebi.microarray.atlas.model.PropertyName;
 import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 import uk.ac.ebi.microarray.atlas.model.Sample;
-import uk.ac.ebi.microarray.atlas.model.SampleProperty;
 
 import java.util.List;
 
@@ -67,9 +66,10 @@ public class SampleDAO extends AbstractDAO<Sample> {
         return NAME_COL;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<SampleProperty> findProperties(PropertyName property, PropertyValue propertyValue) {
-        return template.find("select sp from SampleProperty sp " +
+    public void deleteProperties(PropertyName property, PropertyValue propertyValue) {
+        template.bulkUpdate("delete from SampleProperty sp " +
                 "where sp.property = ? and sp.propertyValue = ?", property, propertyValue);
+        template.flush();
+        template.clear();
     }
 }
