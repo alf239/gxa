@@ -142,7 +142,7 @@ http://www.springframework.org/schema/util/spring-util.xsd">
     <bean name="indexBuilderServiceProperties"
           class="uk.ac.ebi.gxa.index.builder.service.PropertiesIndexBuilderService">
         <property name="atlasDAO" ref="atlasDAO"/>
-        <property name="propertyDAO" ref="propertyDAO"/>
+        <property name="assayDAO" ref="assayDAO"/>
         <property name="solrServer" ref="solrServerProp"/>
     </bean>
 
