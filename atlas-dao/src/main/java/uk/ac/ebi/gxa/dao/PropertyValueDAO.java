@@ -36,14 +36,6 @@ public class PropertyValueDAO extends AbstractDAO<PropertyValue> {
         throw new UnsupportedOperationException();
     }
 
-    public void delete(PropertyValue propertyValue) {
-        template.delete(propertyValue);
-    }
-
-    public PropertyValue getOrCreatePropertyValue(String name, String value) {
-        return getOrCreatePropertyValue(value);
-    }
-
     public PropertyValue getOrCreatePropertyValue(String value) {
         try {
             return find(value);

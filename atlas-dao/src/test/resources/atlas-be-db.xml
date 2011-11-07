@@ -24,8 +24,8 @@
 
 <dataset>
     <DUAL
-        dummy="X"
-        />
+            dummy="X"
+            />
 
     <A2_EXPERIMENT
             experimentid="174501824"
@@ -99,55 +99,46 @@
 
     <A2_PROPERTYVALUE
             propertyvalueid="1"
-            propertyid="1"
             name="microglial cell"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="2"
-            propertyid="2"
             name="value002"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="3"
-            propertyid="2"
             name="value003"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="4"
-            propertyid="3"
             name="value004"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="5"
-            propertyid="2"
             name="value005"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="6"
-            propertyid="2"
             name="value006"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="7"
-            propertyid="1"
             name="value007"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="8"
-            propertyid="3"
             name="value008"
             />
 
     <A2_PROPERTYVALUE
             propertyvalueid="9"
-            propertyid="3"
             name="value009"
             />
 
@@ -285,60 +276,64 @@
     <A2_ASSAYPV
             assaypvid="1"
             assayid="1"
+            propertyid="1"
             propertyvalueid="1"
             />
 
     <A2_ASSAYPV
             assaypvid="2"
             assayid="1"
+            propertyid="2"
             propertyvalueid="2"
             />
 
     <A2_ASSAYPV
             assaypvid="3"
             assayid="2"
+            propertyid="2"
             propertyvalueid="3"
             />
 
     <A2_ASSAYPV
             assaypvid="4"
             assayid="1"
+            propertyid="3"
             propertyvalueid="4"
             />
 
     <A2_ASSAYPV
             assaypvid="5"
             assayid="1"
+            propertyid="2"
             propertyvalueid="5"
-
             />
 
     <A2_ASSAYPV
             assaypvid="6"
             assayid="1"
+            propertyid="2"
             propertyvalueid="6"
-
             />
 
     <A2_ASSAYPV
             assaypvid="7"
             assayid="1"
+            propertyid="1"
             propertyvalueid="7"
-
             />
 
     <A2_ASSAYPV
             assaypvid="8"
             assayid="1"
+            propertyid="3"
             propertyvalueid="8"
-
             />
 
     <A2_ASSAYPV
             assaypvid="9"
             assayid="1"
+            propertyid="3"
             propertyvalueid="9"
-
             />
 
     <A2_SAMPLE
@@ -360,27 +355,29 @@
     <A2_SAMPLEPV
             samplepvid="1"
             sampleid="1"
+            propertyid="3"
             propertyvalueid="4"
             />
 
     <A2_SAMPLEPV
             samplepvid="2"
             sampleid="2"
+            propertyid="2"
             propertyvalueid="5"
             />
 
     <A2_SAMPLEPV
             samplepvid="8"
             sampleid="1"
+            propertyid="3"
             propertyvalueid="8"
-
             />
 
     <A2_SAMPLEPV
             samplepvid="9"
             sampleid="1"
+            propertyid="3"
             propertyvalueid="9"
-
             />
 
     <A2_ASSAYSAMPLE
@@ -495,11 +492,11 @@
 
             />
 
-     <A2_DESIGNELTBIOENTITY
-        DEBEID="1000"
-        DESIGNELEMENTID="171606351"
-        BIOENTITYID="516248"
-        SOFTWAREID="1000"
+    <A2_DESIGNELTBIOENTITY
+            DEBEID="1000"
+            DESIGNELEMENTID="171606351"
+            BIOENTITYID="516248"
+            SOFTWAREID="1000"
             />
 
     <A2_ANNOTATIONSRC
@@ -509,8 +506,8 @@
             url="http://www.ensembl.org/biomart/martservice?"
             biomartorganismname="hsapiens_gene_ensembl"
             databasename="ensembl"
-            mySqlDbName = "homo_sapiens"
-            mySqlDbUrl = "ensembldb.ensembl.org:5306"
+            mySqlDbName="homo_sapiens"
+            mySqlDbUrl="ensembldb.ensembl.org:5306"
             annsrctype="biomart"
             LOADDATE="2011-01-06"
             isApplied="F"
@@ -559,7 +556,7 @@
             NAME="affy_74a"
             />
 
-    
+
     <A2_ONTOLOGY
             ONTOLOGYID="1"
             name="EFO"

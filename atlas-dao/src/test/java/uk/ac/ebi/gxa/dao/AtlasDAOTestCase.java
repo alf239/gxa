@@ -169,7 +169,6 @@ public abstract class AtlasDAOTestCase extends DataSourceBasedDBTestCase {
         runStatement(conn,
                 "CREATE TABLE A2_PROPERTYVALUE " +
                         "(PROPERTYVALUEID bigint not null, " +
-                        "PROPERTYID bigint, " +
                         "NAME VARCHAR(255), " +
                         "DISPLAYNAME VARCHAR(512), " +
                         "CONSTRAINT SYS_C008066 PRIMARY KEY (PROPERTYVALUEID));");
@@ -190,10 +189,13 @@ public abstract class AtlasDAOTestCase extends DataSourceBasedDBTestCase {
                 "CREATE TABLE A2_ASSAYPV " +
                         "(ASSAYPVID bigint not null, " +
                         "ASSAYID bigint, " +
+                        "PROPERTYID bigint, " +
                         "PROPERTYVALUEID bigint, " +
-                        "CONSTRAINT SYS_C008058 PRIMARY KEY (ASSAYPVID)," +
-                        "CONSTRAINT FK_ASSAYPV_PROPERTY FOREIGN KEY (PROPERTYVALUEID) " +
-                        "REFERENCES A2_PROPERTYVALUE (PROPERTYVALUEID) ON DELETE CASCADE) ;");
+                        "CONSTRAINT SYS_C008058 PRIMARY KEY (ASSAYPVID), " +
+                        "CONSTRAINT FK_ASSAYPV_PROPERTY FOREIGN KEY (PROPERTYID) " +
+                        "REFERENCES A2_PROPERTY (PROPERTYID) ON DELETE CASCADE, " +
+                        "CONSTRAINT FK_ASSAYPV_PROPERTYV FOREIGN KEY (PROPERTYVALUEID) " +
+                        "REFERENCES A2_PROPERTYVALUE (PROPERTYVALUEID) ON DELETE CASCADE);");
 
         runStatement(conn,
                 "CREATE TABLE A2_SAMPLE " +
@@ -210,9 +212,12 @@ public abstract class AtlasDAOTestCase extends DataSourceBasedDBTestCase {
                 "  CREATE TABLE A2_SAMPLEPV " +
                         "(SAMPLEPVID bigint not null, " +
                         "SAMPLEID bigint not null, " +
+                        "PROPERTYID bigint, " +
                         "PROPERTYVALUEID bigint, " +
                         "CONSTRAINT SYS_C008061 PRIMARY KEY (SAMPLEPVID)," +
-                        "CONSTRAINT FK_SAMPLEPV_PROPERTY FOREIGN KEY (PROPERTYVALUEID) " +
+                        "CONSTRAINT FK_SAMPLEPV_PROPERTY FOREIGN KEY (PROPERTYID) " +
+                        "REFERENCES A2_PROPERTY (PROPERTYID) ON DELETE CASCADE, " +
+                        "CONSTRAINT FK_SAMPLEPV_PROPERTYV FOREIGN KEY (PROPERTYVALUEID) " +
                         "REFERENCES A2_PROPERTYVALUE (PROPERTYVALUEID) ON DELETE CASCADE) ;");
 
         runStatement(conn,

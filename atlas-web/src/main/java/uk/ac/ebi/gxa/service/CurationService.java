@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ebi.gxa.dao.*;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
@@ -78,17 +79,40 @@ public class CurationService {
      * @return alphabetically sorted collection of values for propertyName
      * @throws ResourceNotFoundException
      */
+    @Transactional
     public Collection<String> getPropertyValues(final String propertyName)
             throws ResourceNotFoundException {
         try {
             PropertyName name = propertyDAO.getByName(propertyName);
-            List<Property> property = assayDAO.getProperties();
+            List<Property> property = assayDAO.getProperties(name);
 
             List<String> propertyValues = newArrayList(transform(property, PROPERTY_VALUE));
             sort(propertyValues);
             return propertyValues;
         } catch (RecordNotFoundException e) {
             throw new ResourceNotFoundException("Cannot find property " + propertyName, e);
+        }
+    }
+
+    /**
+     * Remove propertyName:propertyValue from all assays and samples that are mapped to it (via FK cascading in Oracle) and remove propertyValue from
+     * the list of values assigned to propertyName
+     *
+     * @param propertyName
+     * @param propertyValue
+     * @throws ResourceNotFoundException
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void removePropertyValue(final String propertyName,
+                                    final String propertyValue) throws ResourceNotFoundException {
+        try {
+            PropertyName property = propertyDAO.getByName(propertyName);
+            PropertyValue propValue = propertyValueDAO.find(propertyValue);
+
+            assayDAO.deleteAllOf(assayDAO.findProperties(property, propValue));
+            sampleDAO.deleteAllOf(sampleDAO.findProperties(property, propValue));
+        } catch (RecordNotFoundException e) {
+            throw convert(e);
         }
     }
 

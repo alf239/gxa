@@ -50,7 +50,7 @@ public final class SampleProperty {
     @Nonnull
     @ManyToOne
     @Fetch(FetchMode.SELECT)
-    private PropertyName propertyName;
+    private PropertyName property;
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private PropertyValue propertyValue;
@@ -71,7 +71,7 @@ public final class SampleProperty {
 
     public SampleProperty(Sample sample, Property p, Collection<OntologyTerm> efoTerms) {
         this.sample = sample;
-        propertyName = p.name();
+        property = p.name();
         propertyValue = p.value();
         terms.addAll(efoTerms);
     }
@@ -81,7 +81,7 @@ public final class SampleProperty {
     }
 
     public String getName() {
-        return propertyName.getName();
+        return property.getName();
     }
 
     public String getValue() {
@@ -99,6 +99,7 @@ public final class SampleProperty {
     @Override
     public String toString() {
         return "SampleProperty{" +
+                "property=" + property +
                 "propertyValue=" + propertyValue +
                 ", terms='" + terms + '\'' +
                 '}';
@@ -109,10 +110,10 @@ public final class SampleProperty {
     }
 
     public PropertyName getDefinition() {
-        return propertyName;
+        return property;
     }
 
     public boolean is(Property property) {
-        return propertyName.equals(property.name()) && propertyValue.equals(propertyValue);
+        return this.property.equals(property.name()) && propertyValue.equals(propertyValue);
     }
 }

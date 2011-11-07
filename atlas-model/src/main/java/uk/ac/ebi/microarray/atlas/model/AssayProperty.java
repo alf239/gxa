@@ -35,6 +35,7 @@ import java.util.List;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.unmodifiableList;
 
 @Entity
@@ -51,7 +52,7 @@ public final class AssayProperty {
     @Nonnull
     @ManyToOne
     @Fetch(FetchMode.SELECT)
-    private PropertyName propertyName;
+    private PropertyName property;
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private PropertyValue propertyValue;
@@ -59,14 +60,14 @@ public final class AssayProperty {
     @JoinTable(name = "A2_ASSAYPVONTOLOGY",
             joinColumns = @JoinColumn(name = "ASSAYPVID", referencedColumnName = "ASSAYPVID"),
             inverseJoinColumns = @JoinColumn(name = "ONTOLOGYTERMID", referencedColumnName = "ONTOLOGYTERMID"))
-    private List<OntologyTerm> terms = new ArrayList<OntologyTerm>();
+    private List<OntologyTerm> terms = newArrayList();
 
     AssayProperty() {
     }
 
     public AssayProperty(Assay assay, Property p, List<OntologyTerm> efoTerms) {
         this.assay = assay;
-        propertyName = p.name();
+        property = p.name();
         propertyValue = p.value();
         this.terms = new ArrayList<OntologyTerm>(efoTerms);
     }
@@ -76,7 +77,7 @@ public final class AssayProperty {
     }
 
     public String getName() {
-        return propertyName.getName();
+        return property.getName();
     }
 
     public String getValue() {
@@ -104,13 +105,14 @@ public final class AssayProperty {
     @Override
     public String toString() {
         return "AssayProperty{" +
+                "property=" + property +
                 "propertyValue=" + propertyValue +
                 ", terms='" + terms + '\'' +
                 '}';
     }
 
     public PropertyName getDefinition() {
-        return propertyName;
+        return property;
     }
 
     public PropertyValue getPropertyValue() {
@@ -118,6 +120,6 @@ public final class AssayProperty {
     }
 
     public boolean is(Property property) {
-        return propertyName.equals(property.name()) && propertyValue.equals(property.value());
+        return this.property.equals(property.name()) && propertyValue.equals(property.value());
     }
 }

@@ -1,9 +1,34 @@
+/*
+ * Copyright 2008-2011 Microarray Informatics Team, EMBL-European Bioinformatics Institute
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ * For further details of the Gene Expression Atlas project, including source code,
+ * downloads and documentation, please see:
+ *
+ * http://gxa.github.com/gxa
+ */
+
 package uk.ac.ebi.gxa.dao;
 
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
+import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 import uk.ac.ebi.microarray.atlas.model.Sample;
+import uk.ac.ebi.microarray.atlas.model.SampleProperty;
 
 import java.util.List;
 
@@ -40,5 +65,11 @@ public class SampleDAO extends AbstractDAO<Sample> {
     @Override
     public String getNameColumn() {
         return NAME_COL;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<SampleProperty> findProperties(PropertyName property, PropertyValue propertyValue) {
+        return template.find("select sp from SampleProperty sp " +
+                "where sp.property = ? and sp.propertyValue = ?", property, propertyValue);
     }
 }

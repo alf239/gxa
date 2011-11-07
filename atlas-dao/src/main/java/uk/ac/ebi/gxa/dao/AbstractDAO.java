@@ -75,4 +75,16 @@ public abstract class AbstractDAO<T> {
         else
             throw new RecordNotFoundException(clazz.getName() + ": " + objects.size() + "objects returned; expected 1)");
     }
+
+    public void delete(Object object) {
+        template.delete(object);
+        template.flush();
+    }
+
+    public void deleteAllOf(Iterable<?> objects) {
+        for (Object obj : objects)
+            template.delete(obj);
+        template.flush();
+        template.clear();
+    }
 }
