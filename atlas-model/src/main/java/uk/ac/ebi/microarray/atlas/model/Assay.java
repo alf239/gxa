@@ -31,10 +31,7 @@ import org.hibernate.annotations.FetchMode;
 
 import javax.annotation.Nonnull;
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.SortedSet;
+import java.util.*;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Collections2.filter;
@@ -52,10 +49,10 @@ public class Assay {
                     return input.getName();
                 }
             };
-    private static final Function<AssayProperty, Property> PROPERTY_DEF =
-            new Function<AssayProperty, Property>() {
+    private static final Function<AssayProperty, PropertyName> PROPERTY_DEF =
+            new Function<AssayProperty, PropertyName>() {
                 @Override
-                public Property apply(@Nonnull AssayProperty input) {
+                public PropertyName apply(@Nonnull AssayProperty input) {
                     return input.getDefinition();
                 }
             };
@@ -192,8 +189,8 @@ public class Assay {
         return filter(properties, new PropertyNamePredicate(type));
     }
 
-    public Collection<AssayProperty> getProperties(final Property property) {
-        return filter(properties, new PropertyPredicate(property));
+    public Collection<AssayProperty> getProperties(final PropertyName propertyName) {
+        return filter(properties, new PropertyPredicate(propertyName));
     }
 
     @Deprecated
@@ -201,7 +198,7 @@ public class Assay {
         return newTreeSet(transform(properties, PROPERTY_NAME));
     }
 
-    public SortedSet<Property> getPropertyDefinitions() {
+    public SortedSet<PropertyName> getPropertyDefinitions() {
         return newTreeSet(transform(properties, PROPERTY_DEF));
     }
 
@@ -215,40 +212,40 @@ public class Assay {
         samples.add(sample);
     }
 
-    public void addProperty(PropertyValue property) {
+    public void addProperty(Property property) {
         properties.add(new AssayProperty(this, property, Collections.<OntologyTerm>emptyList()));
     }
 
-    private void addProperty(final PropertyValue property, final List<OntologyTerm> terms) {
+    private void addProperty(Property property, final List<OntologyTerm> terms) {
         properties.add(new AssayProperty(this, property, terms));
     }
 
-    public AssayProperty getProperty(PropertyValue propertyValue) {
-        for (AssayProperty property : properties) {
-            if (property.getPropertyValue().equals(propertyValue))
-                return property;
+    public AssayProperty getProperty(Property property) {
+        for (AssayProperty ap : properties) {
+            if (ap.is(property))
+                return ap;
         }
 
         return null;
     }
 
-    public boolean hasProperty(final PropertyValue propertyValue) {
-        return getProperty(propertyValue) != null;
+    public boolean hasProperty(Property property) {
+        return getProperty(property) != null;
     }
 
-    public void deleteProperty(final PropertyValue propertyValue) {
-        AssayProperty property = getProperty(propertyValue);
-        while (property != null) {
-            properties.remove(property);
-            property = getProperty(propertyValue);
+    public void deleteProperty(Property p) {
+        for (ListIterator<AssayProperty> i = properties.listIterator(); i.hasNext(); ) {
+            AssayProperty property = i.next();
+            if (property.is(p))
+                i.remove();
         }
     }
 
-    public void addOrUpdateProperty(PropertyValue propertyValue, List<OntologyTerm> terms) {
-        if (!this.hasProperty(propertyValue)) {
-            this.addProperty(propertyValue, terms);
+    public void addOrUpdateProperty(Property property, List<OntologyTerm> terms) {
+        AssayProperty assayProperty = getProperty(property);
+        if (assayProperty == null) {
+            addProperty(property, terms);
         } else {
-            AssayProperty assayProperty = this.getProperty(propertyValue);
             assayProperty.setTerms(terms);
         }
     }
@@ -258,17 +255,17 @@ public class Assay {
      * <p/>
      * That is, effective values are union of property sets from the assay itself and all its samples (if any).
      *
-     * @param property definition of the property to look up values for
+     * @param propertyName definition of the property to look up values for
      * @return all values for the property, including values defined by assay's {@link Sample}s
      */
-    public Collection<PropertyValue> getEffectiveValues(Property property) {
+    public Collection<PropertyValue> getEffectiveValues(PropertyName propertyName) {
         SortedSet<PropertyValue> result = newTreeSet();
         for (AssayProperty ap : properties) {
-            if (ap.getDefinition().equals(property))
+            if (ap.getDefinition().equals(propertyName))
                 result.add(ap.getPropertyValue());
         }
         for (Sample sample : samples) {
-            result.addAll(sample.getPropertyValues(property));
+            result.addAll(sample.getPropertyValues(propertyName));
         }
         return result;
     }
@@ -287,9 +284,9 @@ public class Assay {
     }
 
     private static class PropertyPredicate implements Predicate<AssayProperty> {
-        private final Property type;
+        private final PropertyName type;
 
-        public PropertyPredicate(Property type) {
+        public PropertyPredicate(PropertyName type) {
             this.type = type;
         }
 

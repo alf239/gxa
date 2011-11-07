@@ -26,13 +26,11 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.ac.ebi.gxa.dao.PropertyDAO;
+import uk.ac.ebi.gxa.dao.AssayDAO;
 import uk.ac.ebi.gxa.index.builder.IndexAllCommand;
 import uk.ac.ebi.gxa.index.builder.IndexBuilderException;
 import uk.ac.ebi.gxa.index.builder.UpdateIndexForExperimentCommand;
-import uk.ac.ebi.gxa.utils.EscapeUtil;
 import uk.ac.ebi.microarray.atlas.model.Property;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 
 import java.io.IOException;
 import java.util.List;
@@ -41,10 +39,10 @@ import java.util.List;
  * @author pashky
  */
 public class PropertiesIndexBuilderService extends IndexBuilderService {
-    private PropertyDAO pdao;
+    private AssayDAO assayDAO;
 
-    public void setPropertyDAO(PropertyDAO pdao) {
-        this.pdao = pdao;
+    public void setAssayDAO(AssayDAO assayDAO) {
+        this.assayDAO = assayDAO;
     }
 
     @Override
@@ -55,13 +53,11 @@ public class PropertiesIndexBuilderService extends IndexBuilderService {
         try {
             getLog().info("Fetching all properties");
 
-            List<Property> properties = pdao.getAll();
+            List<Property> properties = assayDAO.getProperties();
             int total = properties.size();
             int num = 0;
             for (Property property : properties) {
-                for (PropertyValue value : property.getValues()) {
-                    addProperty(value);
-                }
+                addProperty(property);
                 ++num;
                 progressUpdater.update(num + "/" + total);
             }
@@ -73,15 +69,11 @@ public class PropertiesIndexBuilderService extends IndexBuilderService {
         }
     }
 
-    private void addProperty(PropertyValue value) throws SolrServerException, IOException {
-        Property property = value.getDefinition();
-
+    private void addProperty(Property value) throws SolrServerException, IOException {
         SolrInputDocument solrInputDoc = new SolrInputDocument();
-        solrInputDoc.addField("property_id", property.getId());
-        solrInputDoc.addField("value_id", value.getId());
-        solrInputDoc.addField("property", property.getName());
+        solrInputDoc.addField("property", value.getName());
         solrInputDoc.addField("value", value.getValue());
-        solrInputDoc.addField("pvalue_" + EscapeUtil.encode(property.getName()), value.getValue());
+        solrInputDoc.addField("pvalue_" + value.getName(), value.getValue());
         getLog().debug("Adding property " + value);
         getSolrServer().add(solrInputDoc);
     }
@@ -90,7 +82,6 @@ public class PropertiesIndexBuilderService extends IndexBuilderService {
     public void processCommand(UpdateIndexForExperimentCommand cmd, ProgressUpdater progressUpdater) throws IndexBuilderException {
         processCommand(new IndexAllCommand(), progressUpdater);
     }
-
 
     public String getName() {
         return "properties";

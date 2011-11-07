@@ -1811,7 +1811,7 @@ public class AtlasStructuredQueryService implements IndexBuilderEventHandler, Di
      *
      * @return set of strings representing experimental factors
      */
-    public Set<Property> getExperimentalFactorOptions() {
+    public Set<PropertyName> getExperimentalFactorOptions() {
         return efvService.getOptionsFactors();
     }
 

@@ -48,6 +48,10 @@ public final class AssayProperty {
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private Assay assay;
+    @Nonnull
+    @ManyToOne
+    @Fetch(FetchMode.SELECT)
+    private PropertyName propertyName;
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private PropertyValue propertyValue;
@@ -60,9 +64,10 @@ public final class AssayProperty {
     AssayProperty() {
     }
 
-    public AssayProperty(Assay assay, PropertyValue pv, List<OntologyTerm> efoTerms) {
+    public AssayProperty(Assay assay, Property p, List<OntologyTerm> efoTerms) {
         this.assay = assay;
-        propertyValue = pv;
+        propertyName = p.name();
+        propertyValue = p.value();
         this.terms = new ArrayList<OntologyTerm>(efoTerms);
     }
 
@@ -71,15 +76,11 @@ public final class AssayProperty {
     }
 
     public String getName() {
-        return propertyValue.getDefinition().getName();
+        return propertyName.getName();
     }
 
     public String getValue() {
         return propertyValue.getValue();
-    }
-
-    public PropertyValue getPropertyValue() {
-        return propertyValue;
     }
 
     public List<OntologyTerm> getTerms() {
@@ -108,7 +109,15 @@ public final class AssayProperty {
                 '}';
     }
 
-    public Property getDefinition() {
-        return getPropertyValue().getDefinition();
+    public PropertyName getDefinition() {
+        return propertyName;
+    }
+
+    public PropertyValue getPropertyValue() {
+        return propertyValue;
+    }
+
+    public boolean is(Property property) {
+        return propertyName.equals(property.name()) && propertyValue.equals(property.value());
     }
 }

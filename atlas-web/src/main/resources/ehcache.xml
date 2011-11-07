@@ -25,9 +25,9 @@
            overflowToDisk="false" timeToIdleSeconds="6000" timeToLiveSeconds="300"/>
     <cache name="uk.ac.ebi.microarray.atlas.model.PropertyValue" eternal="true" maxElementsInMemory="40000"
            overflowToDisk="false" timeToIdleSeconds="6000" timeToLiveSeconds="300"/>
-    <cache name="uk.ac.ebi.microarray.atlas.model.Property" eternal="true" maxElementsInMemory="1000"
+    <cache name="uk.ac.ebi.microarray.atlas.model.PropertyName" eternal="true" maxElementsInMemory="1000"
            overflowToDisk="false" timeToIdleSeconds="6000" timeToLiveSeconds="300"/>
-    <cache name="uk.ac.ebi.microarray.atlas.model.Property.values" eternal="true" maxElementsInMemory="1000"
+    <cache name="uk.ac.ebi.microarray.atlas.model.PropertyName.values" eternal="true" maxElementsInMemory="1000"
            overflowToDisk="false" timeToIdleSeconds="6000" timeToLiveSeconds="300"/>
     <cache name="uk.ac.ebi.microarray.atlas.model.OntologyTerm" eternal="true" maxElementsInMemory="10000"
            overflowToDisk="false" timeToIdleSeconds="6000" timeToLiveSeconds="300"/>

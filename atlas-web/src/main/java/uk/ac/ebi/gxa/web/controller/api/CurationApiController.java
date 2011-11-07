@@ -4,13 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.ebi.gxa.exceptions.ResourceNotFoundException;
 import uk.ac.ebi.gxa.service.CurationService;
 import uk.ac.ebi.gxa.web.controller.AtlasViewController;
-import uk.ac.ebi.gxa.exceptions.ResourceNotFoundException;
 import uk.ac.ebi.microarray.atlas.api.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Controller class for mediating Curation API requests - delegates all requests to CurationService
@@ -27,36 +28,22 @@ public class CurationApiController extends AtlasViewController {
     @RequestMapping(value = "/properties",
             method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    public Collection<ApiPropertyName> getPropertyNames(
+    public List<String> getPropertyNames(
             @PathVariable("v") final ApiVersionType version,
             HttpServletResponse response)
             throws ResourceNotFoundException {
-        Collection<ApiPropertyName> propertyNames = curationService.getPropertyNames();
-        return propertyNames;
+        return curationService.getPropertyNames();
     }
 
 
     @RequestMapping(value = "/properties/{propertyName}",
             method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    public Collection<ApiPropertyValue> getPropertyValues(
+    public Collection<String> getPropertyValues(
             @PathVariable("v") final ApiVersionType version,
             @PathVariable("propertyName") final String propertyName, HttpServletResponse response)
             throws ResourceNotFoundException {
-        Collection<ApiPropertyValue> properties = curationService.getPropertyValues(propertyName);
-        return properties;
-    }
-
-    @RequestMapping(value = "/properties/{propertyName}/{propertyValue}",
-            method = RequestMethod.DELETE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public void removePropertyValue(
-            @PathVariable("v") final ApiVersionType version,
-            @PathVariable("propertyName") final String propertyName,
-            @PathVariable("propertyValue") final String propertyValue,
-            HttpServletResponse response)
-            throws ResourceNotFoundException {
-        curationService.removePropertyValue(propertyName, propertyValue);
+        return curationService.getPropertyValues(propertyName);
     }
 
     @RequestMapping(value = "/experiments/assays/properties/{propertyName}/{oldPropertyValue}/{newPropertyValue}",

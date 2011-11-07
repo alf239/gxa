@@ -1,7 +1,6 @@
 package uk.ac.ebi.gxa.service;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +8,16 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.ac.ebi.gxa.dao.AtlasDAOTestCase;
 import uk.ac.ebi.gxa.exceptions.ResourceNotFoundException;
-import uk.ac.ebi.microarray.atlas.api.*;
+import uk.ac.ebi.microarray.atlas.api.ApiOntology;
+import uk.ac.ebi.microarray.atlas.api.ApiOntologyTerm;
+import uk.ac.ebi.microarray.atlas.api.ApiProperty;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+
+import static com.google.common.collect.Collections2.transform;
 
 /**
  * @author Robert Petryszak
@@ -35,27 +39,11 @@ public class TestCurationService extends AtlasDAOTestCase {
     private static final String EFO_0000828 = "EFO_0000828";
     private static final String VBO_0000001 = "VBO_0000001";
 
-    private static final Function<ApiPropertyName, String> PROPERTY_NAME_FUNC =
-            new Function<ApiPropertyName, String>() {
-                @Override
-                public String apply(@Nonnull ApiPropertyName input) {
-                    return input.getName();
-                }
-            };
-
-    private static final Function<ApiPropertyValue, String> PROPERTY_VALUE_FUNC =
-            new Function<ApiPropertyValue, String>() {
-                @Override
-                public String apply(@Nonnull ApiPropertyValue input) {
-                    return input.getValue();
-                }
-            };
-
     private static final Function<ApiProperty, String> PROPERTY_NAME_FUNC1 =
             new Function<ApiProperty, String>() {
                 @Override
                 public String apply(@Nonnull ApiProperty input) {
-                    return input.getPropertyValue().getProperty().getName();
+                    return input.getName();
                 }
             };
 
@@ -63,7 +51,7 @@ public class TestCurationService extends AtlasDAOTestCase {
             new Function<ApiProperty, String>() {
                 @Override
                 public String apply(@Nonnull ApiProperty input) {
-                    return input.getPropertyValue().getValue();
+                    return input.getValue();
                 }
             };
 
@@ -72,17 +60,17 @@ public class TestCurationService extends AtlasDAOTestCase {
 
     @Test
     public void testGetProperties() throws Exception {
-        Collection<ApiPropertyName> propertyNames = curationService.getPropertyNames();
+        List<String> propertyNames = curationService.getPropertyNames();
         assertTrue("No property names found", propertyNames.size() > 0);
-        assertTrue("Property name: " + CELL_TYPE + " not found", Collections2.transform(propertyNames, PROPERTY_NAME_FUNC).contains(CELL_TYPE));
+        assertTrue("Property name: " + CELL_TYPE + " not found", propertyNames.contains(CELL_TYPE));
     }
 
     @Test
     public void testGetPropertyValues() throws Exception {
-        assertTrue("Property name: " + CELL_TYPE + " does not exist", Collections2.transform(curationService.getPropertyNames(), PROPERTY_NAME_FUNC).contains(CELL_TYPE));
-        Collection<ApiPropertyValue> propertyValues = curationService.getPropertyValues(CELL_TYPE);
+        assertTrue("Property name: " + CELL_TYPE + " does not exist", curationService.getPropertyNames().contains(CELL_TYPE));
+        Collection<String> propertyValues = curationService.getPropertyValues(CELL_TYPE);
         assertTrue("No property values found", propertyValues.size() > 0);
-        assertTrue("Property value: " + VALUE007 + " not found", Collections2.transform(propertyValues, PROPERTY_VALUE_FUNC).contains(VALUE007));
+        assertTrue("Property value: " + VALUE007 + " not found", propertyValues.contains(VALUE007));
     }
 
     @Test
@@ -123,7 +111,7 @@ public class TestCurationService extends AtlasDAOTestCase {
         // First add VALUE004 to ASSAY_ACC properties
         Set<ApiOntologyTerm> terms = Sets.newHashSet();
         terms.add(curationService.getOntologyTerm(EFO_0000828));
-        ApiProperty apiProperty = new ApiProperty(new ApiPropertyValue(new ApiPropertyName(CELL_TYPE), VALUE004), terms);
+        ApiProperty apiProperty = new ApiProperty(CELL_TYPE, VALUE004, terms);
         ApiProperty[] newProps = new ApiProperty[1];
         newProps[0] = apiProperty;
         curationService.putAssayProperties(E_MEXP_420, ASSAY_ACC, newProps);
@@ -137,8 +125,7 @@ public class TestCurationService extends AtlasDAOTestCase {
                 propertyPresent(assayProperties, CELL_TYPE, VALUE004));
 
         for (ApiProperty property : assayProperties) {
-            if (CELL_TYPE.equals(property.getPropertyValue().getProperty().getName()) &&
-                    VALUE004.equals(property.getPropertyValue().getValue())) {
+            if (CELL_TYPE.equals(property.getName()) && VALUE004.equals(property.getValue())) {
                 Set<ApiOntologyTerm> newTerms = property.getTerms();
                 assertEquals(2, newTerms.size());
                 // Set of terms in the retained VALUE004 property should be a superset of terms assigned
@@ -180,7 +167,7 @@ public class TestCurationService extends AtlasDAOTestCase {
         // First add VALUE010 to SAMPLE_ACC properties
         Set<ApiOntologyTerm> terms = Sets.newHashSet();
         terms.add(curationService.getOntologyTerm(EFO_0000828));
-        ApiProperty apiProperty = new ApiProperty(new ApiPropertyValue(new ApiPropertyName(PROP3), VALUE010), terms);
+        ApiProperty apiProperty = new ApiProperty(PROP3, VALUE010, terms);
         ApiProperty[] newProps = new ApiProperty[1];
         newProps[0] = apiProperty;
         curationService.putSampleProperties(E_MEXP_420, SAMPLE_ACC, newProps);
@@ -194,8 +181,7 @@ public class TestCurationService extends AtlasDAOTestCase {
                 propertyPresent(sampleProperties, PROP3, VALUE010));
 
         for (ApiProperty property : sampleProperties) {
-            if (PROP3.equals(property.getPropertyValue().getProperty().getName()) &&
-                    VALUE010.equals(property.getPropertyValue().getValue())) {
+            if (PROP3.equals(property.getName()) && VALUE010.equals(property.getValue())) {
                 Set<ApiOntologyTerm> newTerms = property.getTerms();
                 assertEquals(1, newTerms.size());
                 // Set of terms in the retained VALUE004 property should be a superset of terms assigned
@@ -214,19 +200,16 @@ public class TestCurationService extends AtlasDAOTestCase {
         assertTrue("Property : " + PROP3 + ":" + VALUE004 + " not found in sample properties",
                 propertyPresent(curationService.getSampleProperties(E_MEXP_420, SAMPLE_ACC), PROP3, VALUE004));
 
-        curationService.removePropertyValue(CELL_TYPE, VALUE007);
-        curationService.removePropertyValue(PROP3, VALUE004);
-
         assertFalse("Property : " + CELL_TYPE + ":" + VALUE007 + " not removed from assay properties",
                 propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), CELL_TYPE, VALUE007));
         assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not removed from sample properties",
                 propertyPresent(curationService.getSampleProperties(E_MEXP_420, SAMPLE_ACC), PROP3, VALUE004));
 
-        Collection<ApiPropertyValue> propertyValues = curationService.getPropertyValues(CELL_TYPE);
-        assertFalse("Property value: " + VALUE007 + " found", Collections2.transform(propertyValues, PROPERTY_VALUE_FUNC).contains(VALUE007));
+        Collection<String> propertyValues = curationService.getPropertyValues(CELL_TYPE);
+        assertFalse("Property value: " + VALUE007 + " found", propertyValues.contains(VALUE007));
 
         propertyValues = curationService.getPropertyValues(PROP3);
-        assertFalse("Property value: " + VALUE004 + " found", Collections2.transform(propertyValues, PROPERTY_VALUE_FUNC).contains(VALUE004));
+        assertFalse("Property value: " + VALUE004 + " found", propertyValues.contains(VALUE004));
     }
 
     @Test
@@ -251,8 +234,8 @@ public class TestCurationService extends AtlasDAOTestCase {
     public void testGetAssayProperties() throws Exception {
         Collection<ApiProperty> properties = curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC);
         assertTrue("No properties found in assay: " + ASSAY_ACC + " in experiment: " + E_MEXP_420, properties.size() > 0);
-        assertTrue("Assay property name: " + CELL_TYPE + " not found", Collections2.transform(properties, PROPERTY_NAME_FUNC1).contains(CELL_TYPE));
-        assertTrue("Assay property value: " + VALUE007 + " not found", Collections2.transform(properties, PROPERTY_VALUE_FUNC1).contains(VALUE007));
+        assertTrue("Assay property name: " + CELL_TYPE + " not found", transform(properties, PROPERTY_NAME_FUNC1).contains(CELL_TYPE));
+        assertTrue("Assay property value: " + VALUE007 + " not found", transform(properties, PROPERTY_VALUE_FUNC1).contains(VALUE007));
     }
 
     @Test
@@ -261,9 +244,8 @@ public class TestCurationService extends AtlasDAOTestCase {
         assertTrue("No properties found in sample: " + SAMPLE_ACC + " in experiment: " + E_MEXP_420, properties.size() > 0);
 
         ApiProperty apiProperty = properties.iterator().next();
-        apiProperty.setPropertyValue(new ApiPropertyValue(new ApiPropertyName(PROP3), VALUE004));
-        ApiProperty[] newProps = new ApiProperty[1];
-        newProps[0] = apiProperty;
+        apiProperty.update(PROP3, VALUE004);
+        ApiProperty[] newProps = {apiProperty};
 
         curationService.deleteAssayProperties(E_MEXP_420, ASSAY_ACC, newProps);
         assertFalse("Property : " + PROP3 + ":" + VALUE004 + " not deleted in assay properties", propertyPresent(curationService.getAssayProperties(E_MEXP_420, ASSAY_ACC), PROP3, VALUE004));
@@ -277,8 +259,8 @@ public class TestCurationService extends AtlasDAOTestCase {
     public void testGetSampleProperties() throws Exception {
         Collection<ApiProperty> properties = curationService.getSampleProperties(E_MEXP_420, SAMPLE_ACC);
         assertTrue("No properties found in sample: " + SAMPLE_ACC + " in experiment: " + E_MEXP_420, properties.size() > 0);
-        assertTrue("Sample property name: " + PROP3 + " not found", Collections2.transform(properties, PROPERTY_NAME_FUNC1).contains(PROP3));
-        assertTrue("Sample property value: " + VALUE004 + " not found", Collections2.transform(properties, PROPERTY_VALUE_FUNC1).contains(VALUE004));
+        assertTrue("Sample property name: " + PROP3 + " not found", transform(properties, PROPERTY_NAME_FUNC1).contains(PROP3));
+        assertTrue("Sample property value: " + VALUE004 + " not found", transform(properties, PROPERTY_VALUE_FUNC1).contains(VALUE004));
     }
 
     @Test
@@ -287,7 +269,7 @@ public class TestCurationService extends AtlasDAOTestCase {
         assertTrue("No properties found in sample: " + SAMPLE_ACC + " in experiment: " + E_MEXP_420, properties.size() > 0);
 
         ApiProperty apiProperty = properties.iterator().next();
-        apiProperty.setPropertyValue(new ApiPropertyValue(new ApiPropertyName(PROP3), VALUE004));
+        apiProperty.update(PROP3, VALUE004);
         ApiProperty[] newProps = new ApiProperty[1];
         newProps[0] = apiProperty;
 
@@ -385,7 +367,7 @@ public class TestCurationService extends AtlasDAOTestCase {
     private boolean propertyPresent(Collection<ApiProperty> properties, String propertyName, String propertyValue) {
         boolean found = false;
         for (ApiProperty property : properties) {
-            if (propertyName.equals(property.getPropertyValue().getProperty().getName()) && propertyValue.equals(property.getPropertyValue().getValue()))
+            if (propertyName.equals(property.getName()) && propertyValue.equals(property.getValue()))
                 found = true;
         }
         return found;

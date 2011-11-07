@@ -4,6 +4,9 @@ import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.microarray.atlas.model.Assay;
+import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
+import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 
 import java.util.List;
 
@@ -21,8 +24,11 @@ public class AssayDAO extends AbstractDAO<Assay> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Assay> getAssaysByPropertyValue(String propertyValue) {
-        return template.find("select a from Experiment e left join e.assays a left join a.properties p where p.propertyValue.value = ? ", propertyValue);
+    public List<Assay> getAssaysByPropertyValue(PropertyName name, PropertyValue value) {
+        return template.find("select a from Experiment e " +
+                "left join e.assays a " +
+                "left join a.properties p " +
+                "where p.propertyName = ? and p.propertyValue = ? ", name, value);
     }
 
     @Override
@@ -37,5 +43,24 @@ public class AssayDAO extends AbstractDAO<Assay> {
     @Override
     public String getNameColumn() {
         return NAME_COL;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Property> getProperties(PropertyName propertyName) {
+        return template.find("select distinct " +
+                "new uk.ac.ebi.microarray.atlas.model.Property(ap.propertyName, ap.propertyValue) " +
+                "from AssayProperty ap where ap.propertyName = ?", propertyName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PropertyName> getPropertyNames() {
+        return template.find("select distinct ap.propertyName from AssayProperty ap");
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Property> getProperties() {
+        return template.find("select distinct " +
+                "new uk.ac.ebi.microarray.atlas.model.Property(ap.propertyName, ap.propertyValue) " +
+                "from AssayProperty ap");
     }
 }

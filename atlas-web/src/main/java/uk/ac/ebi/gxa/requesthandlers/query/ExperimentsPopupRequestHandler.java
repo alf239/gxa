@@ -106,12 +106,12 @@ public class ExperimentsPopupRequestHandler extends AbstractRestRequestHandler {
                 attr = new EfAttribute(factor);
             } else {
                 try {
-                    final Property property = propertyDAO.getByName(factor);
-                    jsResult.put("ef", property.getName());
-                    jsResult.put("eftext", property.getDisplayName());
+                    final PropertyName propertyName = propertyDAO.getByName(factor);
+                    jsResult.put("ef", propertyName.getName());
+                    jsResult.put("eftext", propertyName.getDisplayName());
                     jsResult.put("efv", factorValue);
 
-                    attr = new EfvAttribute(property.getName(), factorValue);
+                    attr = new EfvAttribute(propertyName.getName(), factorValue);
                 } catch (RecordNotFoundException e) {
                     throw createUnexpected("Unknow EF: " + factor, e);
                 }

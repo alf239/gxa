@@ -27,6 +27,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import javax.annotation.Nonnull;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +47,10 @@ public final class SampleProperty {
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private Sample sample;
+    @Nonnull
+    @ManyToOne
+    @Fetch(FetchMode.SELECT)
+    private PropertyName propertyName;
     @ManyToOne
     @Fetch(FetchMode.SELECT)
     private PropertyValue propertyValue;
@@ -60,13 +65,14 @@ public final class SampleProperty {
     SampleProperty() {
     }
 
-    public SampleProperty(Sample sample, PropertyValue pv) {
-        this(sample, pv, Collections.<OntologyTerm>emptyList());
+    public SampleProperty(Sample sample, Property p) {
+        this(sample, p, Collections.<OntologyTerm>emptyList());
     }
 
-    public SampleProperty(Sample sample, PropertyValue pv, Collection<OntologyTerm> efoTerms) {
+    public SampleProperty(Sample sample, Property p, Collection<OntologyTerm> efoTerms) {
         this.sample = sample;
-        propertyValue = pv;
+        propertyName = p.name();
+        propertyValue = p.value();
         terms.addAll(efoTerms);
     }
 
@@ -75,7 +81,7 @@ public final class SampleProperty {
     }
 
     public String getName() {
-        return propertyValue.getDefinition().getName();
+        return propertyName.getName();
     }
 
     public String getValue() {
@@ -102,7 +108,11 @@ public final class SampleProperty {
         this.terms = terms;
     }
 
-    public Property getDefinition() {
-        return propertyValue.getDefinition();
+    public PropertyName getDefinition() {
+        return propertyName;
+    }
+
+    public boolean is(Property property) {
+        return propertyName.equals(property.name()) && propertyValue.equals(propertyValue);
     }
 }

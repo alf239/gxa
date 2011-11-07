@@ -12,9 +12,12 @@ import uk.ac.ebi.microarray.atlas.api.*;
 import uk.ac.ebi.microarray.atlas.model.*;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.sort;
 
 /**
  * This class handles all Curation API requests, delegated from CurationApiController
@@ -44,17 +47,17 @@ public class CurationService {
     @Autowired
     private PropertyValueDAO propertyValueDAO;
 
-    private static final Function<Property, ApiPropertyName> PROPERTY_NAME =
-            new Function<Property, ApiPropertyName>() {
-                public ApiPropertyName apply(@Nonnull Property p) {
-                    return new ApiPropertyName(p);
+    private static final Function<PropertyName, String> PROPERTY_NAME =
+            new Function<PropertyName, String>() {
+                public String apply(@Nonnull PropertyName p) {
+                    return p.getName();
                 }
             };
 
-    private static final Function<PropertyValue, ApiPropertyValue> PROPERTY_VALUE =
-            new Function<PropertyValue, ApiPropertyValue>() {
-                public ApiPropertyValue apply(@Nonnull PropertyValue pv) {
-                    return new ApiPropertyValue(pv);
+    private static final Function<Property, String> PROPERTY_VALUE =
+            new Function<Property, String>() {
+                public String apply(@Nonnull Property p) {
+                    return p.getValue();
                 }
             };
 
@@ -62,17 +65,11 @@ public class CurationService {
     /**
      * @return alphabetically sorted collection of all property names
      */
-    public Collection<ApiPropertyName> getPropertyNames() {
-        List<Property> property = propertyDAO.getAll();
+    public List<String> getPropertyNames() {
+        List<PropertyName> propertyName = propertyDAO.getAll();
 
-        List<ApiPropertyName> propertyNames = Lists.newArrayList(transform(property, PROPERTY_NAME));
-
-        Collections.sort(propertyNames, new Comparator<ApiPropertyName>() {
-            public int compare(ApiPropertyName o1, ApiPropertyName o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-
+        List<String> propertyNames = newArrayList(transform(propertyName, PROPERTY_NAME));
+        sort(propertyNames);
         return propertyNames;
     }
 
@@ -81,41 +78,17 @@ public class CurationService {
      * @return alphabetically sorted collection of values for propertyName
      * @throws ResourceNotFoundException
      */
-    public Collection<ApiPropertyValue> getPropertyValues(final String propertyName)
+    public Collection<String> getPropertyValues(final String propertyName)
             throws ResourceNotFoundException {
         try {
-            Property property = propertyDAO.getByName(propertyName);
-            List<ApiPropertyValue> propertyValues = Lists.newArrayList(transform(property.getValues(), PROPERTY_VALUE));
+            PropertyName name = propertyDAO.getByName(propertyName);
+            List<Property> property = assayDAO.getProperties();
 
-            Collections.sort(propertyValues, new Comparator<ApiPropertyValue>() {
-                public int compare(ApiPropertyValue o1, ApiPropertyValue o2) {
-                    return o1.getValue().compareToIgnoreCase(o2.getValue());
-                }
-            });
-
+            List<String> propertyValues = newArrayList(transform(property, PROPERTY_VALUE));
+            sort(propertyValues);
             return propertyValues;
         } catch (RecordNotFoundException e) {
-            throw convert(e);
-        }
-    }
-
-    /**
-     * Remove propertyName:propertyValue from all assays and samples that are mapped to it (via FK cascading in Oracle) and remove propertyValue from
-     * the list of values assigned to propertyName
-     *
-     * @param propertyName
-     * @param propertyValue
-     * @throws ResourceNotFoundException
-     */
-    @Transactional
-    public void removePropertyValue(final String propertyName,
-                                    final String propertyValue) throws ResourceNotFoundException {
-        try {
-            Property property = propertyDAO.getByName(propertyName);
-            PropertyValue propValue = propertyValueDAO.find(property, propertyValue);
-            propertyDAO.delete(property, propValue);
-        } catch (RecordNotFoundException e) {
-            throw convert(e);
+            throw new ResourceNotFoundException("Cannot find property " + propertyName, e);
         }
     }
 
@@ -136,20 +109,21 @@ public class CurationService {
             final String newValue)
             throws ResourceNotFoundException {
         try {
-            Property property = propertyDAO.getByName(propertyName);
-            PropertyValue oldPropertyValue = propertyValueDAO.find(property, oldValue);
-            PropertyValue newPropertyValue = propertyValueDAO.getOrCreatePropertyValue(property, newValue);
+            PropertyName name = propertyDAO.getByName(propertyName);
+            final PropertyValue value = propertyValueDAO.find(oldValue);
+            Property oldProperty = new Property(name, value);
+            Property newProperty = getOrCreateProperty(propertyName, newValue);
 
-            List<Assay> assays = assayDAO.getAssaysByPropertyValue(oldValue);
+            List<Assay> assays = assayDAO.getAssaysByPropertyValue(name, value);
             for (Assay assay : assays) {
-                AssayProperty oldAssayProperty = assay.getProperty(oldPropertyValue);
-                AssayProperty newAssayProperty = assay.getProperty(newPropertyValue);
-                List<OntologyTerm> terms = new ArrayList<OntologyTerm>(oldAssayProperty.getTerms());
-                assay.deleteProperty(oldPropertyValue);
+                AssayProperty oldAssayProperty = assay.getProperty(oldProperty);
+                AssayProperty newAssayProperty = assay.getProperty(newProperty);
+                List<OntologyTerm> terms = newArrayList(oldAssayProperty.getTerms());
+                assay.deleteProperty(oldProperty);
                 if (newAssayProperty != null) {
                     terms.addAll(newAssayProperty.getTerms());
                 }
-                assay.addOrUpdateProperty(newPropertyValue, terms);
+                assay.addOrUpdateProperty(newProperty, terms);
                 assayDAO.save(assay);
             }
         } catch (RecordNotFoundException e) {
@@ -174,20 +148,20 @@ public class CurationService {
             final String newValue)
             throws ResourceNotFoundException {
         try {
-            Property property = propertyDAO.getByName(propertyName);
-            PropertyValue oldPropertyValue = propertyValueDAO.find(property, oldValue);
-            PropertyValue newPropertyValue = propertyValueDAO.getOrCreatePropertyValue(property, newValue);
+            PropertyName property = propertyDAO.getByName(propertyName);
+            Property oldProperty = new Property(property, propertyValueDAO.find(oldValue));
+            Property newProperty = getOrCreateProperty(propertyName, newValue);
 
             List<Sample> samples = sampleDAO.getSamplesByPropertyValue(oldValue);
             for (Sample sample : samples) {
-                SampleProperty oldSampleProperty = sample.getProperty(oldPropertyValue);
-                SampleProperty newSampleProperty = sample.getProperty(newPropertyValue);
-                List<OntologyTerm> terms = new ArrayList<OntologyTerm>(oldSampleProperty.getTerms());
-                sample.deleteProperty(oldPropertyValue);
+                SampleProperty oldSampleProperty = sample.getProperty(oldProperty);
+                SampleProperty newSampleProperty = sample.getProperty(newProperty);
+                List<OntologyTerm> terms = newArrayList(oldSampleProperty.getTerms());
+                sample.deleteProperty(oldProperty);
                 if (newSampleProperty != null) {
                     terms.addAll(newSampleProperty.getTerms());
                 }
-                sample.addOrUpdateProperty(newPropertyValue, terms);
+                sample.addOrUpdateProperty(newProperty, terms);
                 sampleDAO.save(sample);
             }
         } catch (RecordNotFoundException e) {
@@ -266,14 +240,14 @@ public class CurationService {
         Assay assay = findAssay(experimentAccession, assayAccession);
 
         for (ApiProperty apiAssayProperty : assayProperties) {
-            PropertyValue propertyValue = getOrCreatePropertyValue(apiAssayProperty.getPropertyValue());
+            Property property = getOrCreateProperty(apiAssayProperty);
 
             List<OntologyTerm> terms = Lists.newArrayList();
             for (ApiOntologyTerm apiOntologyTerm : apiAssayProperty.getTerms()) {
                 terms.add(getOrCreateOntologyTerm(apiOntologyTerm));
             }
 
-            assay.addOrUpdateProperty(propertyValue, terms);
+            assay.addOrUpdateProperty(property, terms);
         }
 
         assayDAO.save(assay);
@@ -294,9 +268,7 @@ public class CurationService {
         Assay assay = findAssay(experimentAccession, assayAccession);
 
         for (ApiProperty apiProperty : assayProperties) {
-            PropertyValue propertyValue = getOrCreatePropertyValue(apiProperty.getPropertyValue());
-
-            assay.deleteProperty(propertyValue);
+            assay.deleteProperty(getOrCreateProperty(apiProperty));
         }
 
         assayDAO.save(assay);
@@ -334,14 +306,12 @@ public class CurationService {
         Sample sample = findSample(experimentAccession, sampleAccession);
 
         for (ApiProperty apiSampleProperty : sampleProperties) {
-            PropertyValue propertyValue = getOrCreatePropertyValue(apiSampleProperty.getPropertyValue());
-
             List<OntologyTerm> terms = Lists.newArrayList();
             for (ApiOntologyTerm apiOntologyTerm : apiSampleProperty.getTerms()) {
                 terms.add(getOrCreateOntologyTerm(apiOntologyTerm));
             }
 
-            sample.addOrUpdateProperty(propertyValue, terms);
+            sample.addOrUpdateProperty(getOrCreateProperty(apiSampleProperty), terms);
         }
 
         sampleDAO.save(sample);
@@ -363,9 +333,7 @@ public class CurationService {
         Sample sample = findSample(experimentAccession, sampleAccession);
 
         for (ApiProperty apiSampleProperty : sampleProperties) {
-            PropertyValue propertyValue = getOrCreatePropertyValue(apiSampleProperty.getPropertyValue());
-
-            sample.deleteProperty(propertyValue);
+            sample.deleteProperty(getOrCreateProperty(apiSampleProperty));
         }
 
         sampleDAO.save(sample);
@@ -504,8 +472,23 @@ public class CurationService {
         }
     }
 
-    private PropertyValue getOrCreatePropertyValue(ApiPropertyValue apv) {
-        return propertyValueDAO.getOrCreatePropertyValue(apv.getProperty().getName(), apv.getValue());
+
+    private Property getOrCreateProperty(ApiProperty apiAssayProperty) {
+        return getOrCreateProperty(apiAssayProperty.getName(), apiAssayProperty.getValue());
+    }
+
+    private Property getOrCreateProperty(String name, String value) {
+        final PropertyName propertyName = propertyDAO.getOrCreateProperty(name);
+        final PropertyValue propertyValue = propertyValueDAO.getOrCreatePropertyValue(value);
+        return new Property(propertyName, propertyValue);
+    }
+
+    private PropertyName getOrCreatePropertyName(String name) {
+        return propertyDAO.getOrCreateProperty(name);
+    }
+
+    private PropertyValue getOrCreatePropertyValue(String value) {
+        return propertyValueDAO.getOrCreatePropertyValue(value);
     }
 
     private static ResourceNotFoundException convert(RecordNotFoundException e) {

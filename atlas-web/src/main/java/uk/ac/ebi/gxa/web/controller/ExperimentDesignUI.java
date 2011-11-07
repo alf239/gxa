@@ -25,7 +25,7 @@ package uk.ac.ebi.gxa.web.controller;
 import uk.ac.ebi.gxa.utils.LazyMap;
 import uk.ac.ebi.microarray.atlas.model.Assay;
 import uk.ac.ebi.microarray.atlas.model.Experiment;
-import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 
 import java.util.*;
@@ -40,7 +40,7 @@ public class ExperimentDesignUI {
         this.exp = exp;
     }
 
-    public SortedSet<Property> getProperties() {
+    public SortedSet<PropertyName> getProperties() {
         return exp.getProperties();
     }
 
@@ -48,15 +48,15 @@ public class ExperimentDesignUI {
         return exp.getAssays();
     }
 
-    public Map<Property, Map<Assay, Collection<PropertyValue>>> getValues() {
+    public Map<PropertyName, Map<Assay, Collection<PropertyValue>>> getValues() {
         // we can rewrite it using Maps.uniqueIndex(), but it doesn't seems to be easier or more concise
-        return new LazyMap<Property, Map<Assay, Collection<PropertyValue>>>() {
+        return new LazyMap<PropertyName, Map<Assay, Collection<PropertyValue>>>() {
             @Override
-            protected Map<Assay, Collection<PropertyValue>> map(final Property property) {
+            protected Map<Assay, Collection<PropertyValue>> map(final PropertyName propertyName) {
                 return new LazyMap<Assay, Collection<PropertyValue>>() {
                     @Override
                     protected Collection<PropertyValue> map(Assay assay) {
-                        return assay.getEffectiveValues(property);
+                        return assay.getEffectiveValues(propertyName);
                     }
 
                     @Override
@@ -67,7 +67,7 @@ public class ExperimentDesignUI {
             }
 
             @Override
-            protected Iterator<Property> keys() {
+            protected Iterator<PropertyName> keys() {
                 return exp.getProperties().iterator();
             }
         };

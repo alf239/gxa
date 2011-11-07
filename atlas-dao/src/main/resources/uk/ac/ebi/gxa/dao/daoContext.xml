@@ -18,7 +18,7 @@
                 <value>uk.ac.ebi.microarray.atlas.model.Ontology</value>
                 <value>uk.ac.ebi.microarray.atlas.model.OntologyTerm</value>
                 <value>uk.ac.ebi.microarray.atlas.model.Organism</value>
-                <value>uk.ac.ebi.microarray.atlas.model.Property</value>
+                <value>uk.ac.ebi.microarray.atlas.model.PropertyName</value>
                 <value>uk.ac.ebi.microarray.atlas.model.PropertyValue</value>
                 <value>uk.ac.ebi.microarray.atlas.model.Sample</value>
                 <value>uk.ac.ebi.microarray.atlas.model.SampleProperty</value>

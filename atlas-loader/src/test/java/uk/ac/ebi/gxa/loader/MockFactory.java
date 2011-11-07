@@ -2,15 +2,12 @@ package uk.ac.ebi.gxa.loader;
 
 import uk.ac.ebi.gxa.loader.dao.LoaderDAO;
 import uk.ac.ebi.gxa.utils.Pair;
-import uk.ac.ebi.microarray.atlas.model.ArrayDesign;
-import uk.ac.ebi.microarray.atlas.model.Organism;
-import uk.ac.ebi.microarray.atlas.model.Property;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
+import uk.ac.ebi.microarray.atlas.model.*;
 
 import java.util.Map;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static uk.ac.ebi.microarray.atlas.model.Property.createProperty;
+import static uk.ac.ebi.microarray.atlas.model.PropertyName.createProperty;
 
 public class MockFactory {
     public static LoaderDAO createLoaderDAO() {
@@ -19,25 +16,30 @@ public class MockFactory {
 
     static class MockLoaderDAO extends LoaderDAO {
         public MockLoaderDAO() {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
         }
 
         private Map<String, Organism> os = newHashMap();
-        private Map<String, Property> ps = newHashMap();
-        private Map<Pair<String, String>, PropertyValue> pvs = newHashMap();
+        private Map<String, PropertyName> ps = newHashMap();
+        private Map<String, PropertyValue> pvs = newHashMap();
+        private Map<Pair<String, String>, Property> properties = newHashMap();
         private Map<String, ArrayDesign> ads = newHashMap();
 
         @Override
-        public PropertyValue getOrCreatePropertyValue(String name, String value) {
-            PropertyValue pv = pvs.get(Pair.create(name, value));
-            if (pv == null) {
-                Property p = ps.get(name);
+        public Property getOrCreatePropertyValue(String name, String value) {
+            Property result = properties.get(Pair.create(name, value));
+            if (result == null) {
+                PropertyName p = ps.get(name);
                 if (p == null) {
                     ps.put(name, p = createProperty(name));
                 }
-                pvs.put(Pair.create(name, value), pv = new PropertyValue(null, p, value));
+                PropertyValue pv = pvs.get(name);
+                if (pv == null) {
+                    pvs.put(name, pv = new PropertyValue(value));
+                }
+                properties.put(Pair.create(name, value), result = new Property(p, pv));
             }
-            return pv;
+            return result;
         }
 
         @Override

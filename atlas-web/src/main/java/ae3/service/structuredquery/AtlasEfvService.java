@@ -32,6 +32,7 @@ import org.apache.solr.common.params.FacetParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import uk.ac.ebi.gxa.dao.AssayDAO;
 import uk.ac.ebi.gxa.dao.PropertyDAO;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
 import uk.ac.ebi.gxa.index.builder.IndexBuilder;
@@ -40,13 +41,15 @@ import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.statistics.EfvAttribute;
 import uk.ac.ebi.gxa.statistics.StatisticsType;
 import uk.ac.ebi.microarray.atlas.model.Property;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -65,11 +68,12 @@ public class AtlasEfvService implements AutoCompleter, IndexBuilderEventHandler,
     private IndexBuilder indexBuilder;
     private AtlasStatisticsQueryService atlasStatisticsQueryService;
     private PropertyDAO propertyDAO;
+    private AssayDAO assayDAO;
 
     final private Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Map<String, PrefixNode> prefixTrees = new HashMap<String, PrefixNode>();
-    private Set<String> allFactors = new HashSet<String>();
+    private final Map<String, PrefixNode> prefixTrees = newHashMap();
+    private Set<String> allFactors = newHashSet();
 
     public void setSolrServerProp(SolrServer solrServerProp) {
         this.solrServerProp = solrServerProp;
@@ -87,15 +91,19 @@ public class AtlasEfvService implements AutoCompleter, IndexBuilderEventHandler,
         this.propertyDAO = propertyDAO;
     }
 
-    public Set<Property> getOptionsFactors() {
+    public void setAssayDAO(AssayDAO assayDAO) {
+        this.assayDAO = assayDAO;
+    }
+
+    public Set<PropertyName> getOptionsFactors() {
         return getFilteredFactors(atlasProperties.getOptionsIgnoredEfs());
     }
 
-    private SortedSet<Property> getFilteredFactors(Collection<String> ignored) {
-        SortedSet<Property> result = newTreeSet();
-        for (Property property : propertyDAO.getAll()) {
-            if (!ignored.contains(property.getName()))
-                result.add(property);
+    private SortedSet<PropertyName> getFilteredFactors(Collection<String> ignored) {
+        SortedSet<PropertyName> result = newTreeSet();
+        for (PropertyName propertyName : assayDAO.getPropertyNames()) {
+            if (!ignored.contains(propertyName.getName()))
+                result.add(propertyName);
         }
         return result;
     }
@@ -130,9 +138,10 @@ public class AtlasEfvService implements AutoCompleter, IndexBuilderEventHandler,
 
                 root = new PrefixNode();
                 try {
-                    final Property p = propertyDAO.getByName(property);
-                    for (PropertyValue pv : p.getValues()) {
-                        EfvAttribute attr = new EfvAttribute(pv.getDefinition().getName(), pv.getValue());
+                    final PropertyName propertyName = propertyDAO.getByName(property);
+                    final List<Property> properties = assayDAO.getProperties(propertyName);
+                    for (Property p : properties) {
+                        EfvAttribute attr = new EfvAttribute(p.getName(), p.getValue());
                         int geneCount = atlasStatisticsQueryService.getBioEntityCountForEfvAttribute(attr, StatisticsType.UP_DOWN);
                         if (geneCount > 0) {
                             root.add(attr.getEfv(), geneCount);
@@ -174,39 +183,39 @@ public class AtlasEfvService implements AutoCompleter, IndexBuilderEventHandler,
         return treeAutocomplete(getPropertyList(name), prefix.toLowerCase(), limit);
     }
 
-    private Collection<Property> getPropertyList(String name) {
+    private Collection<PropertyName> getPropertyList(String name) {
         if (isNullOrEmpty(name))
             return getOptionsFactors();
 
         try {
-            final Property property = propertyDAO.getByName(name);
+            final PropertyName propertyName = propertyDAO.getByName(name);
 
-            if (isProhibited(property))
+            if (isProhibited(propertyName))
                 return emptyList();
 
-            return asList(property);
+            return asList(propertyName);
         } catch (RecordNotFoundException e) {
             log.warn("Unknown property name requested: " + name, e);
             return emptyList();
         }
     }
 
-    private boolean isProhibited(Property property) {
-        return !getOptionsFactors().contains(property);
+    private boolean isProhibited(PropertyName propertyName) {
+        return !getOptionsFactors().contains(propertyName);
     }
 
-    private Collection<AutoCompleteItem> treeAutocomplete(Collection<Property> properties, final @Nonnull String prefix, final int limit) {
+    private Collection<AutoCompleteItem> treeAutocomplete(Collection<PropertyName> propertyNames, final @Nonnull String prefix, final int limit) {
         final List<AutoCompleteItem> result = new ArrayList<AutoCompleteItem>();
 
-        for (final Property property : properties) {
-            PrefixNode root = treeGetOrLoad(property.getName());
+        for (final PropertyName propertyName : propertyNames) {
+            PrefixNode root = treeGetOrLoad(propertyName.getName());
             if (root != null) {
                 root.walk(prefix, 0, "", new PrefixNode.WalkResult() {
                     public void put(String name, int count) {
                         result.add(
                                 new EfvAutoCompleteItem(
-                                        property.getName(),
-                                        property.getDisplayName(),
+                                        propertyName.getName(),
+                                        propertyName.getDisplayName(),
                                         name,
                                         (long) count,
                                         new Rank(1.0 * prefix.length() / name.length())));
@@ -223,8 +232,8 @@ public class AtlasEfvService implements AutoCompleter, IndexBuilderEventHandler,
 
     private String curatedName(String name) {
         try {
-            Property property = propertyDAO.getByName(name);
-            return property.getDisplayName();
+            PropertyName propertyName = propertyDAO.getByName(name);
+            return propertyName.getDisplayName();
         } catch (RecordNotFoundException e) {
             throw createUnexpected("Unknown property: " + name, e);
         }

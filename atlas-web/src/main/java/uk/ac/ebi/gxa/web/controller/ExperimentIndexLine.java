@@ -1,7 +1,7 @@
 package uk.ac.ebi.gxa.web.controller;
 
 import uk.ac.ebi.microarray.atlas.model.Experiment;
-import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 
 import java.util.Date;
 import java.util.SortedSet;
@@ -23,7 +23,7 @@ public class ExperimentIndexLine {
         return experiment.getPubmedId();
     }
 
-    public SortedSet<Property> getExperimentFactors() {
+    public SortedSet<PropertyName> getExperimentFactors() {
         return experiment.getFactors();
     }
 

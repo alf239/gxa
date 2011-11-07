@@ -33,7 +33,7 @@ import uk.ac.ebi.gxa.dao.PropertyDAO;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
 import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.utils.EfvTree;
-import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 import uk.ac.ebi.mydas.configuration.DataSourceConfiguration;
 import uk.ac.ebi.mydas.configuration.PropertyType;
 import uk.ac.ebi.mydas.controller.CacheManager;
@@ -206,11 +206,11 @@ public class GxaS4DasDataSource implements AnnotationDataSource {
         }
 
         try {
-            final Property property = propertyDAO.getByName(factor);
+            final PropertyName propertyName = propertyDAO.getByName(factor);
             return new DasFeature(
-                    property.getDisplayName(),
-                    property.getDisplayName(),
-                    new DasType(SUMMARY, SUMMARY, null, getSortableCaption(property.getDisplayName())),
+                    propertyName.getDisplayName(),
+                    propertyName.getDisplayName(),
+                    new DasType(SUMMARY, SUMMARY, null, getSortableCaption(propertyName.getDisplayName())),
                     new DasMethod(EXPERIMENTAL_FACTOR, EXPERIMENTAL_FACTOR, null),
                     0,
                     0,
@@ -220,7 +220,7 @@ public class GxaS4DasDataSource implements AnnotationDataSource {
                     Collections.singleton(efStudiedForGene ? notes.toString() : "Not studied for this gene"),
                     efStudiedForGene ?
                             Collections.singletonMap(
-                                    new URL(getDasBaseUrl() + "/gene/" + atlasGene.getGeneIdentifier() + "?ef=" + property.getName()),
+                                    new URL(getDasBaseUrl() + "/gene/" + atlasGene.getGeneIdentifier() + "?ef=" + propertyName.getName()),
                                     "View all") :
                             Collections.<URL, String>emptyMap(),
                     null,

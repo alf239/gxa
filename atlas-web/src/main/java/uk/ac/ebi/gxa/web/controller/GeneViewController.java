@@ -45,7 +45,7 @@ import uk.ac.ebi.gxa.properties.AtlasProperties;
 import uk.ac.ebi.gxa.statistics.*;
 import uk.ac.ebi.gxa.utils.StringUtil;
 import uk.ac.ebi.microarray.atlas.model.Experiment;
-import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 import uk.ac.ebi.microarray.atlas.model.bioentity.BioEntity;
 
 import javax.annotation.Nonnull;
@@ -304,7 +304,7 @@ public class GeneViewController extends AtlasViewController {
         return "genepage/gene";
     }
 
-    private Property parseFactor(String ef) throws ResourceNotFoundException {
+    private PropertyName parseFactor(String ef) throws ResourceNotFoundException {
         try {
             return isNullOrEmpty(ef) ? null : propertyDAO.getByName(ef);
         } catch (RecordNotFoundException e) {

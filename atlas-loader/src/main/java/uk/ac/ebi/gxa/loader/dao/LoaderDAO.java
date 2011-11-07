@@ -1,14 +1,8 @@
 package uk.ac.ebi.gxa.loader.dao;
 
-import uk.ac.ebi.gxa.dao.ArrayDesignDAO;
-import uk.ac.ebi.gxa.dao.ExperimentDAO;
-import uk.ac.ebi.gxa.dao.OrganismDAO;
-import uk.ac.ebi.gxa.dao.PropertyValueDAO;
+import uk.ac.ebi.gxa.dao.*;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
-import uk.ac.ebi.microarray.atlas.model.ArrayDesign;
-import uk.ac.ebi.microarray.atlas.model.Experiment;
-import uk.ac.ebi.microarray.atlas.model.Organism;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
+import uk.ac.ebi.microarray.atlas.model.*;
 
 /**
  * The bridge between loader and the rest of the application - encapsulates external services
@@ -17,11 +11,13 @@ import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 public class LoaderDAO {
     private final ExperimentDAO experimentDAO;
     private final PropertyValueDAO propertyValueDAO;
+    private final PropertyDAO propertyDAO;
     private final OrganismDAO organismDAO;
     private final ArrayDesignDAO arrayDesignDAO;
 
-    public LoaderDAO(ExperimentDAO experimentDAO, PropertyValueDAO propertyValueDAO, OrganismDAO organismDAO, ArrayDesignDAO arrayDesignDAO) {
+    public LoaderDAO(ExperimentDAO experimentDAO, PropertyDAO propertyDAO, PropertyValueDAO propertyValueDAO, OrganismDAO organismDAO, ArrayDesignDAO arrayDesignDAO) {
         this.experimentDAO = experimentDAO;
+        this.propertyDAO = propertyDAO;
         this.propertyValueDAO = propertyValueDAO;
         this.organismDAO = organismDAO;
         this.arrayDesignDAO = arrayDesignDAO;
@@ -32,12 +28,15 @@ public class LoaderDAO {
     }
 
     /**
+     *
      * @param name  Free-form string describing EF
      * @param value Free-form string describing EFV
      * @return PropertyValue corresponding to the values passed
      */
-    public PropertyValue getOrCreatePropertyValue(String name, String value) {
-        return propertyValueDAO.getOrCreatePropertyValue(name, value);
+    public Property getOrCreatePropertyValue(String name, String value) {
+        final PropertyName propertyName = propertyDAO.getOrCreateProperty(name);
+        final PropertyValue propertyValue = propertyValueDAO.getOrCreatePropertyValue(value);
+        return new Property(propertyName, propertyValue);
     }
 
     public ArrayDesign getArrayDesignShallow(String accession) {

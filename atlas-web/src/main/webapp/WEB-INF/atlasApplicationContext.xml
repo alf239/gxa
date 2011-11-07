@@ -222,6 +222,7 @@ http://www.springframework.org/schema/util/spring-util.xsd">
         <property name="atlasProperties" ref="atlasProperties"/>
         <property name="atlasStatisticsQueryService" ref="atlasStatisticsQueryService"/>
         <property name="propertyDAO" ref="propertyDAO"/>
+        <property name="assayDAO" ref="assayDAO"/>
         <!-- needs it for cache updates -->
         <property name="indexBuilder" ref="indexBuilder"/>
     </bean>

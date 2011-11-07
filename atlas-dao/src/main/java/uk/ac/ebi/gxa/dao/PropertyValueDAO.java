@@ -2,7 +2,6 @@ package uk.ac.ebi.gxa.dao;
 
 import org.hibernate.SessionFactory;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
-import uk.ac.ebi.microarray.atlas.model.Property;
 import uk.ac.ebi.microarray.atlas.model.PropertyValue;
 
 import java.util.List;
@@ -16,15 +15,14 @@ public class PropertyValueDAO extends AbstractDAO<PropertyValue> {
     }
 
     /**
-     * @param property
-     * @param value
+     * @param value value to search for
      * @return PropertyValue matching property:value
      * @throws uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException
      *          if no PropertyValue matching property:value was found
      */
-    public PropertyValue find(Property property, String value) throws RecordNotFoundException {
+    public PropertyValue find(String value) throws RecordNotFoundException {
         @SuppressWarnings("unchecked")
-        final List<PropertyValue> results = template.find("from PropertyValue where property = ? and value = ?", property, value);
+        final List<PropertyValue> results = template.find("from PropertyValue where value = ?", value);
         return getOnly(results);
     }
 
@@ -43,16 +41,15 @@ public class PropertyValueDAO extends AbstractDAO<PropertyValue> {
     }
 
     public PropertyValue getOrCreatePropertyValue(String name, String value) {
-        Property property = propertyDAO.getOrCreateProperty(name);
-        return getOrCreatePropertyValue(property, value);
+        return getOrCreatePropertyValue(value);
     }
 
-    public PropertyValue getOrCreatePropertyValue(Property property, String value) {
+    public PropertyValue getOrCreatePropertyValue(String value) {
         try {
-            return find(property, value);
+            return find(value);
         } catch (RecordNotFoundException e) {
             // property value not found - create a new one
-            PropertyValue propertyValue = new PropertyValue(null, property, value);
+            PropertyValue propertyValue = new PropertyValue(value);
             save(propertyValue);
             return propertyValue;
         }

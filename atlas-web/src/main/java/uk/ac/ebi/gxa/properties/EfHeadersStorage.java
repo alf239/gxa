@@ -23,7 +23,7 @@ package uk.ac.ebi.gxa.properties;
 
 import uk.ac.ebi.gxa.dao.PropertyDAO;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
-import uk.ac.ebi.microarray.atlas.model.Property;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +66,7 @@ public class EfHeadersStorage implements Storage {
 
     public Collection<String> getAvailablePropertyNames() {
         List<String> result = new ArrayList<String>();
-        for (Property ef : propertyDAO.getAll())
+        for (PropertyName ef : propertyDAO.getAll())
             result.add(PREFIX + ef.getName());
         return result;
     }

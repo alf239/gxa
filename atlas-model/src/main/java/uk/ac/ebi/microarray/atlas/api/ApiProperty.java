@@ -1,13 +1,15 @@
 package uk.ac.ebi.microarray.atlas.api;
 
-import com.google.common.collect.Collections2;
-import uk.ac.ebi.gxa.utils.TransformerUtil;
 import uk.ac.ebi.microarray.atlas.model.AssayProperty;
 import uk.ac.ebi.microarray.atlas.model.OntologyTerm;
 import uk.ac.ebi.microarray.atlas.model.SampleProperty;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.Sets.newHashSet;
+import static uk.ac.ebi.gxa.utils.TransformerUtil.instanceTransformer;
 
 /**
  * Class to represent API representations of Sample or Assay properties
@@ -15,39 +17,46 @@ import java.util.Set;
  * @author Misha Kapushesky
  */
 public class ApiProperty {
-    private ApiPropertyValue propertyValue;
+    private String name;
+    private String value;
     private Set<ApiOntologyTerm> terms;
 
     public ApiProperty() {
     }
 
-    public ApiProperty(final ApiPropertyValue apiPropertyValue, final Set<ApiOntologyTerm> terms) {
-        this.propertyValue = apiPropertyValue;
+    public ApiProperty(String name, String value, final Set<ApiOntologyTerm> terms) {
+        this.name = name;
+        this.value = value;
         this.terms = terms;
     }
 
     public ApiProperty(final AssayProperty assayProperty) {
-        this.propertyValue = new ApiPropertyValue(assayProperty.getPropertyValue());
-
-        this.terms = new HashSet<ApiOntologyTerm>
-                (Collections2.transform(assayProperty.getTerms(),
-                        TransformerUtil.instanceTransformer(OntologyTerm.class, ApiOntologyTerm.class)));
+        this(assayProperty.getName(), assayProperty.getValue(), extractTerms(assayProperty.getTerms()));
     }
 
-    public ApiProperty(final SampleProperty assayProperty) {
-        this.propertyValue = new ApiPropertyValue(assayProperty.getPropertyValue());
-
-        this.terms = new HashSet<ApiOntologyTerm>
-                (Collections2.transform(assayProperty.getTerms(),
-                        TransformerUtil.instanceTransformer(OntologyTerm.class, ApiOntologyTerm.class)));
+    public ApiProperty(final SampleProperty sampleProperty) {
+        this(sampleProperty.getName(), sampleProperty.getValue(), extractTerms(sampleProperty.getTerms()));
     }
 
-    public ApiPropertyValue getPropertyValue() {
-        return propertyValue;
+    public String getName() {
+        return name;
     }
 
-    public void setPropertyValue(ApiPropertyValue propertyValue) {
-        this.propertyValue = propertyValue;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void update(String name, String value) {
+        this.name = name;
+        this.value = value;
     }
 
     public Set<ApiOntologyTerm> getTerms() {
@@ -56,5 +65,9 @@ public class ApiProperty {
 
     public void setTerms(Set<ApiOntologyTerm> terms) {
         this.terms = terms;
+    }
+
+    private static Set<ApiOntologyTerm> extractTerms(List<OntologyTerm> terms) {
+        return newHashSet(transform(terms, instanceTransformer(OntologyTerm.class, ApiOntologyTerm.class)));
     }
 }

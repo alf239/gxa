@@ -1,78 +1,72 @@
+/*
+ * Copyright 2008-2011 Microarray Informatics Team, EMBL-European Bioinformatics Institute
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ * For further details of the Gene Expression Atlas project, including source code,
+ * downloads and documentation, please see:
+ *
+ * http://gxa.github.com/gxa
+ */
+
 package uk.ac.ebi.microarray.atlas.model;
 
-import org.apache.commons.lang.IncompleteArgumentException;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
-import uk.ac.ebi.gxa.utils.EscapeUtil;
-import uk.ac.ebi.gxa.utils.StringUtil;
-
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
-import static java.util.Collections.unmodifiableList;
-
-@Entity
-@Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-public final class Property implements Comparable<Property> {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "propertySeq")
-    @SequenceGenerator(name = "propertySeq", sequenceName = "A2_PROPERTY_SEQ", allocationSize = 1)
-    private Long propertyid;
+/**
+ * @author alf
+ */
+@Immutable
+public class Property {
     @Nonnull
-    private String name;
-    private String displayName;
-    @OneToMany(targetEntity = PropertyValue.class, mappedBy = "property", orphanRemoval = true)
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-    private List<PropertyValue> values = new ArrayList<PropertyValue>();
+    private final PropertyName name;
+    @Nonnull
+    private final PropertyValue value;
 
-    Property() {
-    }
-
-    private Property(Long id, String accession, String displayName) {
-        if (!accession.equals(getSanitizedPropertyAccession(accession)))
-            throw new IncompleteArgumentException("Property accession must be sanitized");
-
-        this.propertyid = id;
-        this.name = accession;
-        this.displayName = displayName;
-    }
-
-    public static String getSanitizedPropertyAccession(String name) {
-        return EscapeUtil.encode(name).toLowerCase();
-    }
-
-    public static Property createProperty(String displayName) {
-        return createProperty(null, getSanitizedPropertyAccession(displayName), displayName);
-    }
-
-    public static Property createProperty(@Nullable Long id, String accession, String displayName) {
-        return new Property(id, accession, displayName);
-    }
-
-    public Long getId() {
-        return propertyid;
+    public Property(PropertyName name, PropertyValue value) {
+        if (name == null)
+            throw new NullPointerException("name is null");
+        if (value == null)
+            throw new NullPointerException("value is null");
+        this.name = name;
+        this.value = value;
     }
 
     @Nonnull
     public String getName() {
+        return name.getName();
+    }
+
+    @Nonnull
+    public String getDisplayName() {
+        return name.getDisplayName();
+    }
+
+    @Nonnull
+    public String getValue() {
+        return value.getValue();
+    }
+
+    @Nonnull
+    PropertyName name() {
         return name;
     }
 
-    public String getDisplayName() {
-        return displayName == null ? StringUtil.prettify(name) : displayName;
-    }
-
-    public List<PropertyValue> getValues() {
-        return unmodifiableList(values);
-    }
-
-    public void deleteValue(PropertyValue propertyValue) {
-        values.remove(propertyValue);
+    @Nonnull
+    PropertyValue value() {
+        return value;
     }
 
     @Override
@@ -80,26 +74,18 @@ public final class Property implements Comparable<Property> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Property that = (Property) o;
+        Property property = (Property) o;
 
-        return name.equals(that.name);
+        if (!name.equals(property.name)) return false;
+        if (!value.equals(property.value)) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Property{" +
-                "id=" + propertyid +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
-    @Override
-    public int compareTo(Property o) {
-        return name.compareTo(o.name);
+        int result = name.hashCode();
+        result = 31 * result + value.hashCode();
+        return result;
     }
 }

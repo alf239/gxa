@@ -36,7 +36,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertArrayEquals;
 import static uk.ac.ebi.gxa.utils.FileUtil.getMD5;
-import static uk.ac.ebi.microarray.atlas.model.Property.createProperty;
+import static uk.ac.ebi.microarray.atlas.model.PropertyName.createProperty;
 
 public class TestNetCDFSplitting extends TestCase {
     private File tempDirectory;
@@ -112,14 +112,10 @@ public class TestNetCDFSplitting extends TestCase {
                     final Sample s = new Sample(sampleAccessions[i]);
                     a.setArrayDesign(ad);
                     for (int j = 0; j < efs.length; ++j) {
-                        a.addProperty(new PropertyValue(
-                                ++id, createProperty(efs[j]), efvs[j][i]
-                        ));
+                        a.addProperty(new Property(createProperty(efs[j]), new PropertyValue(efvs[j][i])));
                     }
                     for (int j = 0; j < scs.length; ++j) {
-                        s.addProperty(new PropertyValue(
-                                ++id, createProperty(scs[j]), scvs[j][i]
-                        ));
+                        s.addProperty(new Property(createProperty(scs[j]), new PropertyValue(scvs[j][i])));
                     }
                     assays.add(a);
                     samples.add(s);

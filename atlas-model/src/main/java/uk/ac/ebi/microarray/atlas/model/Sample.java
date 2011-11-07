@@ -187,19 +187,16 @@ public class Sample {
         return properties.isEmpty();
     }
 
-    public void addProperty(PropertyValue pv) {
-        properties.add(new SampleProperty(this, pv));
+    public void addProperty(Property p) {
+        properties.add(new SampleProperty(this, p));
     }
 
-    private void addProperty(PropertyValue pv, Collection<OntologyTerm> efoTerms) {
-        properties.add(new SampleProperty(this, pv, efoTerms));
+    private void addProperty(Property p, Collection<OntologyTerm> efoTerms) {
+        properties.add(new SampleProperty(this, p, efoTerms));
     }
 
-    public void deleteProperty(final PropertyValue propertyValue) {
-        SampleProperty property = getProperty(propertyValue);
-        while (property != null) {
-            properties.remove(property);
-            property = getProperty(propertyValue);
+    public void deleteProperty(final Property property) {
+        for (SampleProperty p; (p = getProperty(property)) != null; properties.remove(p)) {
         }
     }
 
@@ -211,19 +208,19 @@ public class Sample {
         this.experiment = experiment;
     }
 
-    public SampleProperty getProperty(PropertyValue propertyValue) {
-        for (SampleProperty property : properties) {
-            if (property.getPropertyValue().equals(propertyValue))
-                return property;
+    public SampleProperty getProperty(Property propertyValue) {
+        for (SampleProperty p : properties) {
+            if (p.is(propertyValue))
+                return p;
         }
 
         return null;
     }
 
-    public void addOrUpdateProperty(PropertyValue propertyValue, List<OntologyTerm> terms) {
-        SampleProperty sampleProperty = getProperty(propertyValue);
+    public void addOrUpdateProperty(Property p, List<OntologyTerm> terms) {
+        SampleProperty sampleProperty = getProperty(p);
         if (sampleProperty == null) {
-            addProperty(propertyValue, terms);
+            addProperty(p, terms);
         } else {
             sampleProperty.setTerms(terms);
         }
@@ -237,20 +234,20 @@ public class Sample {
      * Still, the DB is organised in such a way that we can technically get more than one.
      * Since it doesn't break anything, let's live with it for a while.
      *
-     * @param property definition of the property to look up values for
+     * @param propertyName definition of the property to look up values for
      * @return all values for the property
      */
-    public Collection<PropertyValue> getPropertyValues(Property property) {
+    public Collection<PropertyValue> getPropertyValues(PropertyName propertyName) {
         SortedSet<PropertyValue> result = newTreeSet();
         for (SampleProperty sp : properties) {
-            if (sp.getDefinition().equals(property))
+            if (sp.getDefinition().equals(propertyName))
                 result.add(sp.getPropertyValue());
         }
         return result;
     }
 
-    public Collection<Property> getPropertyDefinitions() {
-        SortedSet<Property> result = newTreeSet();
+    public Collection<PropertyName> getPropertyDefinitions() {
+        SortedSet<PropertyName> result = newTreeSet();
         for (SampleProperty sp : properties) {
             result.add(sp.getDefinition());
         }

@@ -2,28 +2,16 @@ package uk.ac.ebi.gxa.dao;
 
 import org.hibernate.SessionFactory;
 import uk.ac.ebi.gxa.dao.exceptions.RecordNotFoundException;
-import uk.ac.ebi.microarray.atlas.model.Property;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
+import uk.ac.ebi.microarray.atlas.model.PropertyName;
 
-public class PropertyDAO extends AbstractDAO<Property> {
-
+public class PropertyDAO extends AbstractDAO<PropertyName> {
 
     public PropertyDAO(SessionFactory sessionFactory) {
-        super(sessionFactory, Property.class);
-    }
-
-
-    public void delete(Property property, PropertyValue propertyValue) {
-        property.deleteValue(propertyValue);
-        save(property);
-        // Clear hibernate session cache to force a re-load of assays/samples from the database. When a propertyValue is removed via hibernate,
-        // foreign key constraints' 'ON DELETE CASCADES' in Oracle remove the corresponding Assay/SampleProperties. Since this is invisible to
-        // hibernate, it does not refresh these objects in its session (L1) cache - hence the need to explicitly clear the cache.
-        template.getSessionFactory().getCurrentSession().clear();
+        super(sessionFactory, PropertyName.class);
     }
 
     @Override
-    public void save(Property object) {
+    public void save(PropertyName object) {
         super.save(object);
         template.flush();
     }
@@ -41,15 +29,15 @@ public class PropertyDAO extends AbstractDAO<Property> {
         return true;
     }
 
-    public Property getOrCreateProperty(String displayName) {
-        final String accession = Property.getSanitizedPropertyAccession(displayName);
+    public PropertyName getOrCreateProperty(String displayName) {
+        final String accession = PropertyName.getSanitizedPropertyAccession(displayName);
         try {
             return getByName(accession);
         } catch (RecordNotFoundException e) {
             // property not found - create a new one
-            Property property = Property.createProperty(null, accession, displayName);
-            save(property);
-            return property;
+            PropertyName propertyName = PropertyName.createProperty(null, accession, displayName);
+            save(propertyName);
+            return propertyName;
         }
     }
 }

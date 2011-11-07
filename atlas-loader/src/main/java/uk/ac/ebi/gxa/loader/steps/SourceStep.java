@@ -30,7 +30,7 @@ import uk.ac.ebi.arrayexpress2.magetab.datamodel.sdrf.node.attribute.Characteris
 import uk.ac.ebi.gxa.loader.AtlasLoaderException;
 import uk.ac.ebi.gxa.loader.cache.ExperimentBuilder;
 import uk.ac.ebi.gxa.loader.dao.LoaderDAO;
-import uk.ac.ebi.microarray.atlas.model.PropertyValue;
+import uk.ac.ebi.microarray.atlas.model.Property;
 import uk.ac.ebi.microarray.atlas.model.Sample;
 import uk.ac.ebi.microarray.atlas.model.SampleProperty;
 
@@ -61,7 +61,6 @@ public class SourceStep {
      * Write out the properties associated with a {@link uk.ac.ebi.microarray.atlas.model.Sample} in the SDRF graph.  These properties are obtained by
      * looking at the "characteristic" column in the SDRF graph, extracting the type and linking this type (the
      * property) to the name of the {@link uk.ac.ebi.arrayexpress2.magetab.datamodel.sdrf.node.SourceNode} provided (the property value).
-     *
      *
      * @param sample     the sample you want to attach properties to
      * @param sourceNode the sourceNode being read
@@ -98,10 +97,10 @@ public class SourceStep {
             }
 
             if (!existing) {
-                final PropertyValue property = dao.getOrCreatePropertyValue(characteristicsAttribute.type, characteristicsAttribute.getNodeName());
+                final Property property = dao.getOrCreatePropertyValue(characteristicsAttribute.type, characteristicsAttribute.getNodeName());
                 sample.addProperty(property);
 
-                if ("organism".equals(property.getDefinition().getName().toLowerCase())) {
+                if ("organism".equals(property.getName().toLowerCase())) {
                     sample.setOrganism(dao.getOrCreateOrganism(property.getValue()));
                 }
 
