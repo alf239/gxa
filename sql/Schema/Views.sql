@@ -39,37 +39,35 @@
          0 IsAssayProperty, 
          pv.PropertyValueID,
          e.ExperimentID 
- FROM a2_experiment e -- on e.ExperimentID = ev.ExperimentID 
- JOIN a2_assay ass ON ass.ExperimentID = e.ExperimentID 
- JOIN a2_assaysample asss ON asss.AssayID = ass.AssayID 
- JOIN a2_sample s ON s.SampleID = asss.SampleID 
+ FROM a2_experiment e
+ JOIN a2_sample s ON s.experimentid = e.experimentid
  JOIN a2_samplePV spv ON spv.SampleID = s.SampleID
- JOIN a2_samplePVontology so ON so.SamplePVID = spv.SamplePVID 
- JOIN a2_propertyvalue pv ON pv.PropertyValueID = spv.PropertyValueID 
- JOIN a2_property p ON p.PropertyID = pv.PropertyID 
- JOIN a2_ontologyterm ot ON ot.OntologyTermID = so.OntologyTermID 
- JOIN a2_ontology o ON o.OntologyID = ot.OntologyID 
- UNION ALL 
-SELECT distinct e.accession, 
-         p.name AS Property, 
-         pv.name AS PropertyValue, 
-         ot.accession AS OntologyTerm, 
-         ot.term AS OntologyTermName, 
-         ot.OntologyTermID AS OntologyTermID, 
-         o.Name OntologyName, 
-         0 IsSampleProperty, 
-         1 IsAssayProperty, 
+ JOIN a2_samplePVontology so ON so.SamplePVID = spv.SamplePVID
+ JOIN a2_propertyvalue pv ON pv.PropertyValueID = spv.PropertyValueID
+ JOIN a2_property p ON p.PropertyID = spv.PropertyID
+ JOIN a2_ontologyterm ot ON ot.OntologyTermID = so.OntologyTermID
+ JOIN a2_ontology o ON o.OntologyID = ot.OntologyID
+ UNION ALL
+SELECT distinct e.accession,
+         p.name AS Property,
+         pv.name AS PropertyValue,
+         ot.accession AS OntologyTerm,
+         ot.term AS OntologyTermName,
+         ot.OntologyTermID AS OntologyTermID,
+         o.Name OntologyName,
+         0 IsSampleProperty,
+         1 IsAssayProperty,
          pv.PropertyValueID,
-         e.ExperimentID 
-  FROM a2_experiment e -- on e.ExperimentID = ev.ExperimentID 
-  JOIN a2_assay ass ON ass.ExperimentID = e.ExperimentID 
+         e.ExperimentID
+  FROM a2_experiment e
+  JOIN a2_assay ass ON ass.ExperimentID = e.ExperimentID
   JOIN a2_assayPV apv ON apv.assayID = ass.AssayID
   JOIN a2_assayPVontology ao ON ao.AssayPVID = apv.assayPVID
-  JOIN a2_propertyvalue pv ON pv.PropertyValueID = apv.PropertyValueID 
-  JOIN a2_property p ON p.PropertyID = pv.PropertyID 
+  JOIN a2_propertyvalue pv ON pv.PropertyValueID = apv.PropertyValueID
+  JOIN a2_property p ON p.PropertyID = apv.PropertyID
   JOIN a2_ontologyterm ot ON ot.OntologyTermID = ao.OntologyTermID 
-  JOIN a2_ontology o ON o.OntologyID = ot.OntologyID
-/
+  JOIN a2_ontology o ON o.OntologyID = ot.OntologyID;
+
 --------------------------------------------------------
 --  DDL for View VWARRAYDESIGN
 --------------------------------------------------------
@@ -110,8 +108,8 @@ join a2_Experiment e on a.ExperimentID = e.ExperimentID
 from a2_Assay a
 join a2_AssayPV ap on ap.AssayID = a.AssayID
 join a2_PropertyValue pv on pv.PropertyValueID = ap.PropertyValueID
-join a2_Property p on p.PropertyID = pv.PropertyID
-/
+join a2_Property p on p.PropertyID = ap.PropertyID;
+
 --------------------------------------------------------
 --  DDL for View VWASSAYSAMPLE
 --------------------------------------------------------
@@ -143,11 +141,10 @@ join a2_Assay a on a.ExperimentID = e.ExperimentID
 --------------------------------------------------------
 
 CREATE OR REPLACE VIEW "VWEXPERIMENTFACTORS" ("EXPERIMENTID", "PROPERTYID", "PROPERTYVALUEID") AS
-select distinct a. ExperimentID, pv.PropertyID, pv.PropertyValueID
+select distinct a.ExperimentID, apv.PropertyID, apv.PropertyValueID
 from a2_assayPV apv
-join a2_propertyvalue pv on apv.propertyvalueid = pv.propertyvalueid
-join a2_assay a on a.assayid = apv.assayid
-/
+join a2_assay a on a.assayid = apv.assayid;
+
 --------------------------------------------------------
 --  DDL for View VWEXPERIMENTSAMPLE
 --------------------------------------------------------
@@ -155,10 +152,8 @@ join a2_assay a on a.assayid = apv.assayid
 CREATE OR REPLACE VIEW "VWEXPERIMENTSAMPLE" ("EXPERIMENTID", "SAMPLEID", "ACCESSION") AS
 select e.ExperimentID, s.SampleID, s.Accession
 from a2_Experiment e
-join a2_Assay a on a.ExperimentID = e.ExperimentID
-join a2_AssaySample sa on sa.AssayID = a.AssayID
-join a2_Sample s on s.SampleID = sa.SampleID
-/
+join a2_Sample s on s.experimentid = e.experimentid;
+
 --------------------------------------------------------
 --  DDL for View VWGENE
 --------------------------------------------------------
@@ -182,13 +177,23 @@ join a2_GeneGPV gpv on gpv.genepropertyvalueid = pv.genepropertyvalueid
 --  DDL for View VWPROPERTYVALUE
 --------------------------------------------------------
 
-  CREATE OR REPLACE VIEW "VWPROPERTYVALUE" ("PROPERTYVALUEID", "PROPERTYID", "PROPERTYNAME", "VALUE") AS select pv.PropertyValueID
+  CREATE OR REPLACE VIEW "VWPROPERTYVALUE" ("PROPERTYVALUEID", "PROPERTYID", "PROPERTYNAME", "VALUE") AS
+select pv.PropertyValueID
 ,p.PropertyID
 ,p.Name PropertyName
 ,pv.Name Value
-from a2_PropertyValue pv
-join a2_Property p on p.PropertyID = pv.PropertyID
-/
+from a2_assaypv apv
+join a2_PropertyValue pv on pv.PropertyValueID = apv.PropertyValueID
+join a2_Property p on p.PropertyID = apv.PropertyID
+UNION
+select pv.PropertyValueID
+,p.PropertyID
+,p.Name PropertyName
+,pv.Name Value
+from a2_samplepv spv
+join a2_PropertyValue pv on pv.PropertyValueID = spv.PropertyValueID
+join a2_Property p on p.PropertyID = spv.PropertyID;
+
 --------------------------------------------------------
 --  DDL for View VWSAMPLE
 --------------------------------------------------------
@@ -213,37 +218,14 @@ join a2_assay a on a.AssayID = asa.AssayID
 from a2_Sample a
 join a2_SamplePV ap on ap.SampleID = a.SampleID
 join a2_PropertyValue pv on pv.PropertyValueID = ap.PropertyValueID
-join a2_Property p on p.PropertyID = pv.PropertyID
-/
+join a2_Property p on p.PropertyID = ap.PropertyID;
+
 
 CREATE OR REPLACE VIEW vwExperimentSample as
   Select distinct s.SampleID, a.ExperimentID 
   from a2_Sample s
   join a2_AssaySample ass on ass.SampleID = s.SampleID
   join a2_Assay a on a.AssayID = ass.AssayID;
-
-/  
-
-/**OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE 
-CREATE OR REPLACE VIEW vwGeneIDProperty as 
-  Select Name, IdentifierPriority as Priority 
-  from a2_GeneProperty
-  where IdentifierPriority is not null; 
-
-*/
-
-/**OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE OBSOLETE 
-CREATE OR REPLACE VIEW vwGeneIDs as
- Select g.GeneID
-       ,p.Name
-       ,pv.Value
- from a2_Gene g
- join a2_GeneGPV gpv on gpv.GeneID = g.GeneID
- join a2_GenePropertyValue pv on pv.genepropertyvalueid = gpv.genepropertyvalueid
- join a2_geneproperty p on p.genepropertyid = pv.genepropertyid
- where p.name in (select Name from vwGeneIDProperty);
-
-*/
 
 CREATE OR REPLACE VIEW vwCheck as
  select 'Experiments w/o assay' as Name
@@ -298,7 +280,6 @@ CREATE OR REPLACE VIEW vwCheck as
         , Accession
             from a2_Assay
 ;
-/
 
 exit;
 
